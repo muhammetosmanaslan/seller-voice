@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seller Voice — Performans Paneli</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root {
+  --bg:#080c14;--s1:#0e1420;--s2:#141c2c;--s3:#1a2336;
+  --border:#1e2a3e;--border2:#263347;
+  --accent:#2d7ef7;--gold:#f0b429;--red:#e83b3b;--green:#22c97a;--purple:#9b7ef8;
+  --text:#d8e0f0;--muted:#4a5670;--muted2:#7a8aaa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+
+
+/* ── AGENT MODAL TABS ── */
+.am-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.am-tab{background:transparent;border:none;color:var(--muted2);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;padding:9px 16px 11px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.am-tab:hover{color:var(--text);}
+.am-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+
+/* ── SETUP ── */
+#setupOverlay{position:fixed;inset:0;background:rgba(6,8,17,.97);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.setup-box{background:var(--s1);border:1px solid var(--border2);border-radius:16px;padding:36px 40px;width:min(640px,94vw);box-shadow:0 32px 64px rgba(0,0,0,.7);max-height:90vh;overflow-y:auto;}
+.setup-logo{font-weight:700;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:-.01em;}
+.setup-title{font-weight:800;font-size:1.5rem;margin-bottom:6px;letter-spacing:-.02em;}
+.setup-sub{font-size:.78rem;color:var(--muted2);margin-bottom:24px;line-height:1.6;}
+.setup-steps{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:20px;font-size:.72rem;color:var(--muted2);line-height:2;}
+.setup-steps b{color:var(--gold);}
+.setup-steps code{background:var(--s3);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;color:var(--green);font-size:.68rem;}
+.setup-lbl{font-size:.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.setup-input{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;padding:11px 14px;outline:none;margin-bottom:10px;transition:border-color .2s;}
+.setup-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,126,247,.1);}
+.btn-load{width:100%;background:var(--accent);color:white;font-weight:700;font-size:.88rem;border:none;border-radius:9px;padding:13px;cursor:pointer;transition:all .15s;margin-top:8px;}
+.btn-load:hover{background:#4a8fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,126,247,.3);}
+.btn-load:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.setup-demo{text-align:center;margin-top:12px;font-size:.72rem;color:var(--muted2);}
+.setup-demo a{color:var(--accent);cursor:pointer;}
+
+/* Çoklu Sheets */
+.sheets-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.sheet-row{display:flex;gap:8px;align-items:center;}
+.sheet-row input{flex:1;background:var(--s3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.75rem;padding:9px 12px;outline:none;transition:border-color .2s;}
+.sheet-row input:focus{border-color:var(--accent);}
+.sheet-row .name-in{max-width:120px;}
+.btn-add-sheet{background:transparent;border:1px dashed var(--border2);color:var(--muted2);border-radius:8px;padding:9px 16px;font-size:.72rem;cursor:pointer;transition:all .15s;width:100%;}
+.btn-add-sheet:hover{border-color:var(--accent);color:var(--accent);}
+.btn-rm{background:transparent;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px 6px;line-height:1;transition:color .15s;}
+.btn-rm:hover{color:var(--red);}
+
+/* ── HEADER ── */
+header{background:var(--s1);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.logo{font-weight:700;font-size:1rem;display:flex;align-items:center;gap:10px;letter-spacing:-.01em;}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.logo span{color:var(--accent);}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.hbtn{background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;font-weight:500;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.hbtn:hover{border-color:var(--accent);color:var(--accent);}
+.hbtn.ghost{background:transparent;color:var(--muted2);}
+.hbtn.ghost:hover{border-color:var(--muted2);color:var(--text);}
+.sync-info{font-size:.68rem;color:var(--muted2);}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--s1);border-bottom:1px solid var(--border);padding:8px 28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.fb-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-right:4px;}
+.pb{padding:5px 13px;font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:5px;cursor:pointer;transition:all .15s;}
+.pb:hover{color:var(--text);border-color:var(--muted2);}
+.pb.active{background:var(--accent);border-color:var(--accent);color:white;}
+.fb-sep{color:var(--border2);margin:0 4px;}
+.ri{background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;padding:5px 9px;border-radius:6px;outline:none;}
+.ri:focus{border-color:var(--accent);}
+.period-count{margin-left:auto;font-size:.7rem;color:var(--muted2);}
+
+/* Proje filtresi */
+.proj-btns{display:flex;gap:6px;align-items:center;}
+.proj-btn{padding:4px 12px;font-size:.7rem;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:20px;cursor:pointer;transition:all .15s;}
+.proj-btn:hover{border-color:var(--muted2);color:var(--text);}
+.proj-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(45,126,247,.1);}
+
+/* Past months dropdown */
+.pm-wrap{position:relative;}
+.pm-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:200;min-width:160px;box-shadow:0 12px 32px rgba(0,0,0,.5);}
+.pm-drop.open{display:block;}
+.pm-item{padding:8px 14px;font-size:.75rem;font-weight:500;color:var(--muted2);border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.pm-item:hover{background:var(--s3);color:var(--text);}
+.pm-item.active{background:var(--accent);color:white;}
+.pm-empty{padding:10px 14px;font-size:.72rem;color:var(--muted);}
+
+/* ── TABS ── */
+.tabs{background:var(--s1);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:0;overflow-x:auto;}
+.tab{padding:13px 18px;font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;color:var(--muted2);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── MAIN ── */
+main{padding:22px 28px;max-width:1440px;margin:0 auto;}
+.section{display:none;}
+.section.active{display:block;animation:fadeIn .22s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px;margin-bottom:22px;}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:17px 18px;position:relative;overflow:hidden;transition:border-color .2s;}
+.sc:hover{border-color:var(--border2);}
+.sc::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,var(--gc,transparent) 0%,transparent 60%);pointer-events:none;}
+.sc.c-blue{--gc:rgba(45,126,247,.07)}.sc.c-gold{--gc:rgba(240,180,41,.07)}.sc.c-red{--gc:rgba(232,59,59,.07)}.sc.c-green{--gc:rgba(34,201,122,.07)}.sc.c-purple{--gc:rgba(155,126,248,.07)}
+.sc-tag{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+.sc-tag::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--dc,var(--accent));}
+.sc.c-gold .sc-tag::before{--dc:var(--gold)}.sc.c-red .sc-tag::before{--dc:var(--red)}.sc.c-green .sc-tag::before{--dc:var(--green)}.sc.c-purple .sc-tag::before{--dc:var(--purple)}
+.sc-val{font-weight:800;font-size:1.9rem;line-height:1;margin-bottom:3px;letter-spacing:-.02em;}
+.sc.c-blue .sc-val{color:var(--accent)}.sc.c-gold .sc-val{color:var(--gold)}.sc.c-red .sc-val{color:var(--red)}.sc.c-green .sc-val{color:var(--green)}.sc.c-purple .sc-val{color:var(--purple)}
+.sc-sub{font-size:.67rem;color:var(--muted);}
+
+/* ── CHARTS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.g1{margin-bottom:18px;}
+@media(max-width:860px){.g2{grid-template-columns:1fr;}}
+.cc{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.cc-title{font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.tt{font-size:.63rem;padding:4px 9px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;}
+.tt.active{background:var(--s3);color:var(--text);border-color:var(--muted2);}
+
+/* ── PODIUM ── */
+.podium-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:860px){.podium-grid{grid-template-columns:1fr;}}
+.pod-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.pod-head{padding:11px 16px;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.pod-head.best{color:var(--green)}.pod-head.worst{color:var(--red)}
+.pod-item{display:flex;align-items:center;padding:11px 16px;gap:12px;border-bottom:1px solid var(--s2);transition:background .15s;cursor:pointer;}
+.pod-item:last-child{border-bottom:none;}
+.pod-item:hover{background:var(--s2);}
+.pod-rank{font-weight:800;font-size:1.15rem;width:26px;text-align:center;}
+.r1{color:var(--gold)}.r2{color:#94a3b8}.r3{color:#cd7f32}
+.pod-info{flex:1;}
+.pod-name{font-size:.82rem;font-weight:500;}
+.pod-detail{font-size:.64rem;color:var(--muted2);margin-top:2px;}
+.pod-score{font-weight:700;font-size:1rem;}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:14px;}
+.tbl-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.tbl-head-title{font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:.61rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;}
+td{padding:10px 14px;font-size:.78rem;border-bottom:1px solid var(--s2);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.018);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.63rem;font-weight:700;letter-spacing:.01em;}
+/* 1-2=detractör kırmızı  3-4=pasif sarı  5=promotör yeşil */
+.b1{background:rgba(232,59,59,.20);color:#ff5252;border:1px solid rgba(232,59,59,.25);}
+.b2{background:rgba(232,59,59,.14);color:#e83b3b;border:1px solid rgba(232,59,59,.18);}
+.b3{background:rgba(240,180,41,.18);color:#f0b429;border:1px solid rgba(240,180,41,.22);}
+.b4{background:rgba(240,180,41,.12);color:#c9960e;border:1px solid rgba(240,180,41,.16);}
+.b5{background:rgba(34,201,122,.20);color:#22c97a;border:1px solid rgba(34,201,122,.28);}
+
+/* ── SMALL BTN ── */
+.sbtn{font-weight:600;font-size:.7rem;border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:7px;padding:6px 13px;cursor:pointer;transition:all .15s;}
+.sbtn:hover{border-color:var(--accent);color:var(--accent);}
+.sbtn.pri{background:var(--accent);border-color:var(--accent);color:white;}
+.sbtn.pri:hover{background:#4a8fff;box-shadow:0 2px 10px rgba(45,126,247,.25);}
+.sbtn.sm{padding:4px 10px;font-size:.65rem;}
+
+/* ── FILTER ROW ── */
+.frow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:16px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:.61rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.fg input,.fg select{background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.76rem;padding:6px 10px;border-radius:7px;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--accent);}
+
+/* ── DISPO GRID ── */
+.dispo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;margin-top:16px;}
+.dcard{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:15px;}
+.dcard-name{font-weight:700;font-size:.8rem;margin-bottom:11px;}
+.dbar{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+.dbar-lbl{font-size:.61rem;color:var(--muted2);width:52px;}
+.dbar-bg{flex:1;background:var(--s3);border-radius:4px;height:6px;overflow:hidden;}
+.dbar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.dbar-n{font-size:.67rem;color:var(--muted2);width:20px;text-align:right;}
+
+/* ── CROSS ── */
+.cx-btn{font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:5px;padding:4px 11px;cursor:pointer;transition:all .15s;}
+.cx-btn:hover{color:var(--text);border-color:var(--muted2);}
+.cx-btn.active{background:var(--red);border-color:var(--red);color:white;}
+.rd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;}
+.rd-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s;}
+.rd-card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.rd-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.rd-name{font-weight:700;font-size:.82rem;}
+.rd-row{display:flex;align-items:center;padding:8px 15px;gap:11px;border-bottom:1px solid var(--s2);transition:background .15s;}
+.rd-row:last-child{border-bottom:none;}
+.rd-row:hover{background:var(--s2);}
+.rd-dname{flex:1;font-size:.73rem;}
+.rd-bw{width:75px;background:var(--s3);border-radius:4px;height:5px;overflow:hidden;}
+.rd-bf{height:100%;border-radius:4px;}
+.rd-mb{font-size:.58rem;padding:2px 6px;border-radius:9px;font-weight:600;}
+.hm-table{border-collapse:collapse;font-size:.67rem;}
+.hm-table th{padding:7px 11px;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;white-space:nowrap;background:var(--s1);border:1px solid var(--border);font-family:'Inter',sans-serif;}
+.hm-table td{padding:0;border:1px solid var(--border);text-align:center;min-width:50px;cursor:default;}
+.hm-cell{padding:7px 9px;font-weight:700;font-size:.76rem;transition:filter .15s;}
+.hm-cell:hover{filter:brightness(1.3);}
+.hm-rep{padding:7px 13px;font-size:.7rem;white-space:nowrap;text-align:left;font-weight:500;background:var(--s1);border:1px solid var(--border);}
+.risk-hi{color:var(--red);font-weight:700}.risk-md{color:var(--gold);font-weight:600}.risk-lo{color:var(--green)}
+
+/* ── HAKSIZ ── */
+.hc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px;}
+
+/* ── AGENT PROFILE MODAL ── */
+#agentModal{position:fixed;inset:0;background:rgba(6,8,17,.92);z-index:500;display:none;overflow-y:auto;backdrop-filter:blur(3px);}
+#agentModal.open{display:block;}
+.am-wrap{max-width:1100px;margin:28px auto;padding:0 20px 48px;}
+.am-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.am-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:white;flex-shrink:0;}
+.am-name{font-weight:800;font-size:1.5rem;letter-spacing:-.02em;}
+.am-meta{font-size:.75rem;color:var(--muted2);margin-top:3px;}
+.am-close{margin-left:auto;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-size:1.2rem;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.am-close:hover{color:var(--red);border-color:var(--red);}
+.am-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.am-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:700px){.am-g2{grid-template-columns:1fr;}}
+.am-dispo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px;margin-top:14px;}
+
+/* click-through rows */
+.clickable-row{cursor:pointer;}
+.clickable-row:hover td{background:rgba(45,126,247,.06) !important;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:.76rem;transform:translateY(60px);opacity:0;transition:all .3s;z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{background:var(--green);color:#080c14;}
+.toast.err{background:var(--red);color:white;}
+
+/* footer */
+footer{margin-top:40px;padding:18px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+footer span{font-size:.66rem;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ═══ SETUP ═══ -->
+<div id="setupOverlay">
+ <div class="setup-box">
+  <!-- Logo & başlık -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+   <div style="width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:white;letter-spacing:-.02em;flex-shrink:0;">SV</div>
+   <div>
+    <div style="font-weight:800;font-size:1.25rem;letter-spacing:-.02em;">Seller Voice</div>
+    <div style="font-size:.72rem;color:var(--muted2);margin-top:1px;">Performans Paneli</div>
+   </div>
+  </div>
+
+  <!-- Tek bir açıklama cümlesi -->
+  <div style="font-size:.78rem;color:var(--muted2);margin-bottom:20px;line-height:1.7;">
+   Google Sheets'teki veri bağlantı URL'ini yapıştırın.
+  </div>
+
+  <div class="setup-lbl">Data Sheet Bağlantısı</div>
+  <div class="sheets-list" id="sheetsList"></div>
+  <button class="btn-add-sheet" onclick="addSheetRow()">+ Yeni Proje Ekle</button>
+
+  <div style="display:flex;gap:10px;margin-top:16px;">
+   <button class="btn-load" id="btnLoad" onclick="loadAll()" style="flex:1">Bağlan ve Yükle</button>
+   <button class="btn-load" onclick="testConnection()" style="flex:0 0 auto;background:var(--s3);border:1px solid var(--border2);color:var(--muted2);width:auto;padding:0 18px;" id="btnTest">Test</button>
+  </div>
+  <div id="testResult" style="font-size:.72rem;margin-top:10px;min-height:18px;"></div>
+
+  <div class="setup-demo">ya da <a onclick="loadDemo()">demo verisiyle dene →</a></div>
+
+  <!-- İmza — minimal, göz önünde değil -->
+  <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+   <span style="font-size:.6rem;color:var(--muted);letter-spacing:.12em;opacity:.5;user-select:none;">M · O · A</span>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ AGENT MODAL ═══ -->
+<div id="agentModal">
+ <div class="am-wrap">
+  <div class="am-header">
+   <div class="am-avatar" id="amAvatar"></div>
+   <div>
+    <div class="am-name" id="amName"></div>
+    <div class="am-meta" id="amMeta"></div>
+   </div>
+   <button class="am-close" onclick="closeAgent()">✕</button>
+  </div>
+  <div class="am-stats" id="amStats"></div>
+  <!-- Sekme bar -->
+  <div class="am-tabs">
+   <button class="am-tab active" onclick="amTab('ozet',this)">📊 Özet</button>
+   <button class="am-tab" onclick="amTab('gelisim',this)">📈 Gelişim Raporu</button>
+   <button class="am-tab" onclick="amTab('kayitlar',this)">📋 Kayıtlar</button>
+  </div>
+  <!-- ÖZET -->
+  <div id="amSec_ozet" class="am-sec active">
+   <div class="am-g2">
+    <div class="cc"><div class="cc-title">Günlük Puan Trendi</div><canvas id="amTrend" height="180"></canvas></div>
+    <div class="cc"><div class="cc-title">Puan Dağılımı</div><canvas id="amDist" height="180"></canvas></div>
+   </div>
+   <div class="cc" style="margin-bottom:14px">
+    <div class="cc-title">Dispo Bazlı 1–2 Puan Sayısı</div>
+    <canvas id="amDispo" height="130"></canvas>
+   </div>
+  </div>
+  <!-- GELİŞİM RAPORU -->
+  <div id="amSec_gelisim" class="am-sec" style="display:none">
+   <div id="amGelisimContent"></div>
+  </div>
+  <!-- KAYITLAR -->
+  <div id="amSec_kayitlar" class="am-sec" style="display:none">
+   <div class="tbl-wrap" style="margin-top:0">
+    <table><thead><tr><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Proje</th></tr></thead>
+    <tbody id="amRecords"></tbody></table>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<header>
+ <div class="logo"><div class="logo-dot"></div>SELLER <span>VOICE</span><span style="color:var(--border2);font-size:.75rem;margin:0 4px">|</span><span style="color:var(--muted2);font-size:.7rem;font-weight:400">Performans Paneli</span></div>
+ <div class="hdr-right">
+  <span class="sync-info" id="syncInfo">—</span>
+  <button class="hbtn" onclick="resyncAll()">⟳ Yenile</button>
+  <button class="hbtn ghost" onclick="openSetup()">⚙ Ayarlar</button>
+ </div>
+</header>
+
+<div class="filter-bar">
+ <span class="fb-label">Dönem</span>
+ <button class="pb active" onclick="setPeriod('today')">Bugün</button>
+ <button class="pb" onclick="setPeriod('week')">Bu Hafta</button>
+ <button class="pb" onclick="setPeriod('month')">Bu Ay</button>
+ <div class="pm-wrap">
+  <button class="pb" id="pmBtn" onclick="togglePM(event)">Geçmiş Aylar ▾</button>
+  <div class="pm-drop" id="pmDrop"><div id="pmList"></div></div>
+ </div>
+ <button class="pb" onclick="setPeriod('all')">Tümü</button>
+ <span class="fb-sep">|</span>
+ <input type="date" class="ri" id="cfrom" onchange="setPeriod('custom')">
+ <span style="color:var(--muted);font-size:.7rem">—</span>
+ <input type="date" class="ri" id="cto" onchange="setPeriod('custom')">
+<!-- proje+TL filtreleri rafa kaldırıldı — DOM var, görünmüyor -->
+ <div style="display:none"><div class="proj-btns" id="projBtns"><button class="proj-btn active" data-proj="all" onclick="setProj('all',this)">Tümü</button></div></div>
+ <div style="display:none"><div class="proj-btns" id="tlBtns"><button class="proj-btn active" data-tl="all" onclick="setTL('all',this)">Tümü</button></div></div>
+ <span class="period-count" id="periodCount"></span>
+</div>
+
+<div class="tabs">
+ <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+ <div class="tab" onclick="switchTab('temsilciler')">Temsilciler</div>
+ <div class="tab" onclick="switchTab('dispo')">Dispo</div>
+ <div class="tab" onclick="switchTab('capraz')">⚡ Çapraz Analiz</div>
+ <div class="tab" onclick="switchTab('haksiz')">⚖ Haksız 1'ler</div>
+ <div class="tab" onclick="switchTab('kayitlar')">Kayıtlar</div>
+</div>
+
+<main>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+ <div class="stat-grid" id="statGrid"></div>
+ <div class="podium-grid" id="podiumGrid"></div>
+ <div class="g2">
+  <div class="cc"><div class="cc-title">Puan Dağılımı</div><canvas id="cDist" height="200"></canvas></div>
+  <div class="cc"><div class="cc-title">Top 10 Temsilci Ortalaması</div><canvas id="cRep" height="200"></canvas></div>
+ </div>
+ <div class="cc g1">
+  <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <span>📈 Günlük Performans Trendi</span>
+    <div style="display:flex;gap:6px">
+      <button class="tt active" onclick="setTM('avg',this)">Ort. Puan</button>
+      <button class="tt" onclick="setTM('bad',this)">1–2 Puan Sayısı</button>
+      <button class="tt" onclick="setTM('total',this)">Toplam Anket</button>
+    </div>
+  </div>
+  <div id="trendSummary" style="display:flex;gap:18px;padding:10px 0 4px;flex-wrap:wrap;"></div>
+  <canvas id="cTrend" height="130"></canvas>
+</div>
+ <div class="cc g1">
+  <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <span>⚠️ Dispo Bazlı Kritik Anketler — 1 ve 2 Puan</span>
+    <span id="dispoSubtitle" style="font-size:.68rem;color:var(--muted2);font-weight:400">En fazla düşük puan alan 10 dispo türü</span>
+  </div>
+  <canvas id="cDispo" height="155"></canvas>
+</div>
+</section>
+
+<!-- TEMSİLCİLER -->
+<section id="temsilciler" class="section">
+ <div class="frow">
+  <div class="fg"><label>Ara</label><input type="text" id="repSearch" placeholder="Temsilci..." oninput="renderRepTable()"></div>
+  <div class="fg"><label>Sırala</label>
+   <select id="repSort" onchange="renderRepTable()">
+    <option value="avg_desc">Ort. Puan ↓</option>
+    <option value="avg_asc">Ort. Puan ↑</option>
+    <option value="bad_desc">Düşük Puan ↓</option>
+    <option value="total_desc">Toplam ↓</option>
+   </select>
+  </div>
+ </div>
+ <div class="tbl-wrap">
+  <table>
+   <thead><tr><th>#</th><th>Temsilci</th><th>Proje</th><th>Toplam</th><th>Ort. Puan</th><th style="color:var(--red)">1–2 Det.</th><th style="color:var(--gold)">3–4 Pasif</th><th style="color:var(--green)">5 Pro.</th><th>Durum</th></tr></thead>
+   <tbody id="repTable"></tbody>
+  </table>
+ </div>
+</section>
+
+<!-- DİSPO -->
+<section id="dispo" class="section">
+ <p style="font-size:.74rem;color:var(--muted2);margin-bottom:4px">Dispo türlerine göre puan dağılımı — 1–2 puan yoğunluğuna göre sıralı.</p>
+ <div class="dispo-grid" id="dispoGrid"></div>
+</section>
+
+<!-- ÇAPRAZ -->
+<section id="capraz" class="section">
+ <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+  <div>
+   <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">Temsilci × Dispo <span style="color:var(--red)">Başarısızlık</span> Matrisi</div>
+   <div style="font-size:.72rem;color:var(--muted2)">Kırmızı hücre = sorun bölgesi. Hücrenin üzerine gelin detay görün.</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+   <button class="cx-btn active" onclick="setCX('bad12',this)">1–2 Puan</button>
+   <button class="cx-btn" onclick="setCX('avg',this)">Ort. Puan</button>
+   <button class="cx-btn" onclick="setCX('total',this)">Toplam</button>
+  </div>
+ </div>
+ <div id="rdCards" style="margin-bottom:24px;"></div>
+ <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">Isı Haritası</div>
+ <div style="overflow-x:auto;" id="hmWrap"></div>
+ <div style="margin-top:22px;">
+  <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">En Kritik 10 Kombinasyon</div>
+  <div class="tbl-wrap" style="margin-top:0"><table><thead><tr><th>Sıra</th><th>Temsilci</th><th>Dispo</th><th style="color:var(--red)">1</th><th style="color:var(--gold)">2</th><th>Toplam</th><th>Ort.</th><th>Risk</th></tr></thead><tbody id="worstPairs"></tbody></table></div>
+ </div>
+</section>
+
+<!-- HAKSIZ -->
+<section id="haksiz" class="section">
+ <div class="hc-grid" id="hcGrid"></div>
+ <div class="cc" style="margin-bottom:18px">
+  <div class="cc-title">Haksız 1 Puanlı Kontak Ekle</div>
+  <p style="font-size:.73rem;color:var(--muted2);margin-bottom:14px;line-height:1.6">CALL/CHAT ID girin — sistem kaydı bulur, ortalamayı çıkarılmış haliyle karşılaştırır.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+   <div class="fg"><label>CALL/CHAT ID</label><input type="text" id="hCallId" placeholder="hq.prod1.177..." style="min-width:240px" oninput="hLookup()"></div>
+   <div class="fg"><label>Temsilci (otomatik)</label><input type="text" id="hRep" readonly style="min-width:160px;background:var(--s3);color:var(--muted2)"></div>
+   <div class="fg"><label>Neden Haksız?</label><input type="text" id="hReason" placeholder="Sistem hatası, yanlış kişi..." style="min-width:180px"></div>
+   <button class="sbtn pri" onclick="addHaksiz()">+ Ekle</button>
+  </div>
+  <div id="hHint" style="font-size:.67rem;margin-top:7px;"></div>
+ </div>
+ <div class="tbl-wrap">
+  <div class="tbl-head"><span class="tbl-head-title">Haksız 1 Listesi</span><button class="sbtn sm" onclick="clearHaksiz()">Tümünü Temizle</button></div>
+  <table><thead><tr><th>#</th><th>CALL/CHAT ID</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Neden</th><th></th></tr></thead>
+  <tbody id="hTable"></tbody></table>
+ </div>
+ <div style="margin-top:20px;">
+  <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px">Temsilci Bazlı Etki</div>
+  <div class="tbl-wrap" style="margin-top:0"><table><thead><tr><th>Temsilci</th><th>Mevcut Ort.</th><th>Düzeltilmiş Ort.</th><th>Fark</th><th>Çıkarılan</th></tr></thead><tbody id="hRepTable"></tbody></table></div>
+ </div>
+</section>
+
+<!-- TEAM LEADER -->
+<section id="teamleader" class="section">
+ <div class="stat-grid" id="tlStatGrid"></div>
+ <div class="g2" style="margin-bottom:18px">
+  <div class="cc"><div class="cc-title">Team Leader Karşılaştırması — Ort. Puan</div><canvas id="cTLAvg" height="220"></canvas></div>
+  <div class="cc"><div class="cc-title">Team Leader Karşılaştırması — 1–2 Puan Sayısı</div><canvas id="cTLBad" height="220"></canvas></div>
+ </div>
+ <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:12px">Team Leader Detay Tablosu</div>
+ <div class="tbl-wrap" style="margin-top:0">
+  <table>
+   <thead><tr>
+    <th>#</th><th>Team Leader</th><th>Temsilci Sayısı</th><th>Toplam Anket</th>
+    <th>Ort. Puan</th><th style="color:var(--red)">1 Puan</th>
+    <th style="color:var(--gold)">2 Puan</th><th style="color:var(--green)">4–5 Puan</th><th>Durum</th>
+   </tr></thead>
+   <tbody id="tlTable"></tbody>
+  </table>
+ </div>
+ <div style="margin-top:22px;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:12px">Temsilci Bazlı Detay (TL Seçin)</div>
+ <div class="frow" style="margin-bottom:12px">
+  <div class="fg"><label>Team Leader</label>
+   <select id="tlSelect" onchange="renderTLDetail()">
+    <option value="">— Seçin —</option>
+   </select>
+  </div>
+ </div>
+ <div id="tlDetailWrap"></div>
+</section>
+
+<!-- KAYITLAR -->
+<section id="kayitlar" class="section">
+ <div class="frow">
+  <div class="fg"><label>Temsilci</label><input type="text" id="fRep" oninput="renderAll2()" placeholder="filtrele..."></div>
+  <div class="fg"><label>CALL/CHAT ID</label><input type="text" id="fCallId" oninput="renderAll2()" placeholder="hq.prod..."></div>
+  <div class="fg"><label>Dispo</label><input type="text" id="fDispo" oninput="renderAll2()" placeholder="filtrele..."></div>
+  <div class="fg"><label>Puan</label>
+   <select id="fScore" onchange="renderAll2()">
+    <option value="">Tümü</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+   </select>
+  </div>
+  <div class="fg"><label>Team Leader</label><input type="text" id="fTL" oninput="renderAll2()" placeholder="filtrele..."></div>
+  <button class="sbtn" onclick="clearF()">Temizle</button>
+  <button class="sbtn pri" onclick="exportCSV()">↓ CSV</button>
+ </div>
+ <div class="tbl-wrap">
+  <div class="tbl-head"><span class="tbl-head-title" id="allCount">0 kayıt</span></div>
+  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Team Leader</th><th>Proje</th></tr></thead>
+  <tbody id="allTable"></tbody></table>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ <span>SELLER VOICE — Anket Performans Paneli | Veriler Google Sheets'ten canlı çekilmektedir.</span>
+ <span id="footerInfo">—</span>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ STATE ══
+let allRecords = [];
+let filtered   = [];
+let activePeriod = 'all';
+let activeProj   = 'all';
+let activeTL     = 'all';
+let trendMode    = 'avg';
+let cxMode       = 'bad12';
+let charts       = {};
+let haksizList   = JSON.parse(localStorage.getItem('sv_haksiz')||'[]');
+let projects     = [];
+let agentCharts  = {};
+let tlCharts     = {};
+
+
+// ── SKOR RENK & YILDIZ YARDIMCILARI ──
+function scoreColor(s){return s===5?'#22c97a':s>=3?'#f0b429':'#e83b3b';}
+function scoreBg(s){return s===5?'rgba(34,201,122,.15)':s>=3?'rgba(240,180,41,.14)':'rgba(232,59,59,.15)';}
+function scoreLabel(s){return s===5?'✓ Promotör':s>=3?'~ Pasif':'✗ Detractör';}
+function scoreStars(s){return '★'.repeat(s)+'☆'.repeat(5-s)+' '+s;}
+
+// ══ SETUP ══
+function getSavedConfig(){ try{return JSON.parse(localStorage.getItem('sv_cfg'));}catch(e){return null;} }
+function saveConfig(c){ localStorage.setItem('sv_cfg',JSON.stringify(c)); }
+
+function openSetup(){
+  document.getElementById('setupOverlay').style.display='flex';
+  const cfg = getSavedConfig();
+  const list = cfg?.sheets?.length ? cfg.sheets : [{name:'',url:''}];
+  renderSheetRows(list);
+}
+
+function renderSheetRows(list){
+  const el = document.getElementById('sheetsList');
+  el.innerHTML = list.map((s,i)=>`
+    <div class="sheet-row" id="sr${i}">
+      <input class="name-in" placeholder="Proje Adı" value="${s.name||''}" id="sn${i}" style="max-width:140px">
+      <input placeholder="Web App URL  (https://script.google.com/macros/s/...)" value="${s.url||''}" id="su${i}" style="flex:1;font-size:.7rem">
+      <button class="btn-rm" onclick="removeSheetRow(${i})" title="Sil">✕</button>
+    </div>`).join('');
+}
+
+function addSheetRow(){
+  const rows = getSheetRows();
+  rows.push({name:'',url:''});
+  renderSheetRows(rows);
+}
+
+function removeSheetRow(i){
+  const rows = getSheetRows();
+  rows.splice(i,1);
+  if(!rows.length) rows.push({name:'',url:''});
+  renderSheetRows(rows);
+}
+
+function getSheetRows(){
+  const rows=[];
+  let i=0;
+  while(document.getElementById(`sn${i}`)){
+    rows.push({name:document.getElementById(`sn${i}`).value.trim(), url:document.getElementById(`su${i}`).value.trim()});
+    i++;
+  }
+  return rows;
+}
+
+// ══ LOAD ══
+async function loadAll(){
+  const rows = getSheetRows().filter(r=>r.url);
+  if(!rows.length){toast('En az bir Web App URL\'i girin','err');return;}
+  const btn=document.getElementById('btnLoad');
+  btn.disabled=true; btn.textContent='Yükleniyor...';
+  try{
+    const all=[];
+    for(const row of rows){
+      const projName = row.name || 'Proje '+(rows.indexOf(row)+1);
+      const recs = await fetchWebApp(row.url, projName);
+      all.push(...recs);
+    }
+    allRecords = all;
+    saveConfig({sheets:rows});
+    buildProjButtons();
+    buildTLButtons();
+    buildPastMonths();
+    document.getElementById('setupOverlay').style.display='none';
+    document.getElementById('syncInfo').textContent='Sync: '+new Date().toLocaleTimeString('tr-TR');
+    document.getElementById('footerInfo').textContent=allRecords.length+' kayıt | '+new Date().toLocaleString('tr-TR');
+    setPeriod('month');
+    toast(`${allRecords.length} kayıt yüklendi ✓`,'ok');
+  }catch(e){
+    btn.disabled=false; btn.textContent='Bağlan ve Yükle';
+    toast('Hata: '+e.message,'err');
+    console.error(e);
+  }
+}
+
+async function resyncAll(){
+  const cfg=getSavedConfig();
+  if(!cfg?.sheets?.length){openSetup();return;}
+  try{
+    const all=[];
+    for(const row of cfg.sheets.filter(r=>r.url)){
+      const projName=row.name||'Proje';
+      all.push(...await fetchWebApp(row.url, projName));
+    }
+    allRecords=all;
+    buildProjButtons();
+    buildTLButtons();
+    buildPastMonths();
+    document.getElementById('syncInfo').textContent='Sync: '+new Date().toLocaleTimeString('tr-TR');
+    document.getElementById('footerInfo').textContent=allRecords.length+' kayıt | '+new Date().toLocaleString('tr-TR');
+    applyFilters();
+    toast(`${allRecords.length} kayıt güncellendi ✓`,'ok');
+  }catch(e){ toast('Hata: '+e.message,'err'); console.error(e); }
+}
+
+// ── Web App'ten veri çek ──
+async function fetchWebApp(url, projName){
+  // Apps Script Web App doğrudan JSON döner — proxy yok, CORS yok
+  const endpoint = url + (url.includes('?') ? '&' : '?') + 'action=getData';
+  const resp = await fetch(endpoint);
+  if(!resp.ok) throw new Error(`HTTP ${resp.status} — URL doğru mu?`);
+
+  const json = await resp.json();
+  if(json.error) throw new Error(json.error);
+
+  // Apps Script zaten temizlenmiş records döndürür
+  const records = (json.records || []).map((r,i)=>({
+    id: i,
+    rep:    r.rep   || '',
+    date:   r.date  || '',
+    dispo:  r.dispo || '',
+    score:  r.score,
+    callId: r.callId || '',
+    proj:   projName || r.proj || 'Proje',
+    note:   r.note  || '',
+  })).filter(r=>r.rep && r.date && r.score);
+
+  console.log(`✅ ${projName}: ${records.length} kayıt`);
+  return records;
+}
+
+// ── Bağlantı test ──
+async function testConnection(){
+  const rows = getSheetRows().filter(r=>r.url);
+  if(!rows.length){document.getElementById('testResult').innerHTML='<span style="color:var(--red)">URL girin</span>';return;}
+  const el = document.getElementById('testResult');
+  el.innerHTML='<span style="color:var(--muted2)">Test ediliyor...</span>';
+  for(const row of rows){
+    try{
+      const url = row.url + (row.url.includes('?')?'&':'?') + 'action=ping';
+      const r = await fetch(url);
+      const j = await r.json();
+      el.innerHTML=`<span style="color:var(--green)">✓ Bağlantı başarılı — Proje: ${j.proje||'?'} | Zaman: ${new Date(j.ts).toLocaleTimeString('tr-TR')}</span>`;
+    }catch(e){
+      el.innerHTML=`<span style="color:var(--red)">✗ Bağlanamadı: ${e.message} — Web App deploy edildi mi? Erişim "Herkese açık" mı?</span>`;
+    }
+  }
+}
+
+function parseScore(v){
+  if(!v||String(v).includes('VALUE')||String(v).includes('#'))return null;
+  const n=parseFloat(String(v).replace(',','.').replace(/[^0-9.]/g,''));
+  if(!isNaN(n)&&n>=1&&n<=5)return Math.round(n);
+  return null;
+}
+
+function normalizeDate(s){
+  if(!s)return'';
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  const m1=s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);
+  if(m1)return`${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`;
+  const m2=s.match(/^(\d{4})-(\d{2})-(\d{2})\s/);
+  if(m2)return`${m2[1]}-${m2[2]}-${m2[3]}`;
+  try{const d=new Date(s);if(!isNaN(d))return d.toISOString().slice(0,10);}catch(e){}
+  return s.slice(0,10);
+}
+
+// ══ PROJE FİLTRESİ ══
+function buildProjButtons(){
+  const projs=['all',...new Set(allRecords.map(r=>r.proj))];
+  document.getElementById('projBtns').innerHTML=projs.map(p=>`
+    <button class="proj-btn${p===activeProj?' active':''}" data-proj="${p}" onclick="setProj('${p}',this)">${p==='all'?'Tümü':p}</button>
+  `).join('');
+}
+
+function buildTLButtons(){
+  const tls=['all',...new Set(allRecords.map(r=>r.teamLeader||'').filter(Boolean))].sort();
+  document.getElementById('tlBtns').innerHTML=tls.map(tl=>`
+    <button class="proj-btn${tl===activeTL?' active':''}" data-tl="${tl}" onclick="setTL('${tl}',this)">${tl==='all'?'Tümü':tl}</button>
+  `).join('');
+  // TL select dropdown
+  const sel=document.getElementById('tlSelect');
+  if(sel){
+    sel.innerHTML='<option value="">— Seçin —</option>'+tls.filter(t=>t!=='all').map(t=>`<option value="${t}">${t}</option>`).join('');
+  }
+}
+
+function setProj(p,el){
+  activeProj=p;
+  document.querySelectorAll('.proj-btn[data-proj]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function setTL(tl,el){
+  activeTL=tl;
+  document.querySelectorAll('.proj-btn[data-tl]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+// ══ PERIOD ══
+function setPeriod(p){
+  activePeriod=p;
+  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('active'));
+  const map={today:0,week:1,month:2,all:4};
+  if(map[p]!==undefined) document.querySelectorAll('.pb')[map[p]]?.classList.add('active');
+  if(p.startsWith('pm_')) document.getElementById('pmBtn')?.classList.add('active');
+  document.getElementById('pmDrop').classList.remove('open');
+  document.querySelectorAll('.pm-item').forEach(el=>el.classList.toggle('active',el.dataset.key===p));
+  applyFilters();
+}
+
+function togglePM(e){e.stopPropagation();document.getElementById('pmDrop').classList.toggle('open');}
+document.addEventListener('click',()=>document.getElementById('pmDrop')?.classList.remove('open'));
+
+function buildPastMonths(){
+  const now=new Date();
+  const curYM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const set=new Set();
+  allRecords.forEach(r=>{const ym=r.date.slice(0,7);if(ym<curYM)set.add(ym);});
+  const months=[...set].sort((a,b)=>b.localeCompare(a));
+  const TR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const el=document.getElementById('pmList');
+  el.innerHTML=!months.length?'<div class="pm-empty">Geçmiş ay verisi yok</div>':months.map(ym=>{
+    const[y,m]=ym.split('-');
+    return`<div class="pm-item" data-key="pm_${ym}" onclick="setPeriod('pm_${ym}')">${TR[parseInt(m)]} ${y}</div>`;
+  }).join('');
+}
+
+function applyFilters(){
+  const now=new Date();
+  let from,to;
+  if(activePeriod==='today'){from=to=now.toISOString().slice(0,10);}
+  else if(activePeriod==='week'){const d=new Date(now);d.setDate(now.getDate()-now.getDay()+1);from=d.toISOString().slice(0,10);to=now.toISOString().slice(0,10);}
+  else if(activePeriod==='month'){from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;to=now.toISOString().slice(0,10);}
+  else if(activePeriod.startsWith('pm_')){
+    const ym=activePeriod.replace('pm_','');const[y,m]=ym.split('-');
+    from=`${ym}-01`;to=`${ym}-${String(new Date(+y,+m,0).getDate()).padStart(2,'0')}`;
+  }else if(activePeriod==='custom'){from=document.getElementById('cfrom').value;to=document.getElementById('cto').value;}
+  else{from='2000-01-01';to='2099-12-31';}
+
+  filtered=allRecords.filter(r=>r.date>=from&&r.date<=to
+    &&(activeProj==='all'||r.proj===activeProj)
+    &&(activeTL==='all'||r.teamLeader===activeTL));
+  document.getElementById('periodCount').textContent=filtered.length+' anket';
+  renderEverything();
+}
+
+// ══ TAB ══
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['dashboard','temsilciler','dispo','capraz','haksiz','kayitlar'];
+    t.classList.toggle('active',ids[i]===id);
+  });
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(id==='haksiz')renderHaksiz();
+}
+
+// ══ RENDER ALL ══
+function renderEverything(){
+  renderStats();renderPodium();renderCharts();renderRepTable();renderDispoGrid();renderCross();renderAll2();
+  if(document.getElementById('haksiz').classList.contains('active'))renderHaksiz();
+}
+
+// ── STATS ──
+function renderStats(){
+  const r=filtered,total=r.length;
+  const avg=total?r.reduce((a,v)=>a+v.score,0)/total:0;
+  const bad=r.filter(v=>v.score<=2).length;
+  const good=r.filter(v=>v.score===5).length;
+  const reps=new Set(r.map(v=>v.rep)).size;
+  document.getElementById('statGrid').innerHTML=`
+    <div class="sc c-blue"><div class="sc-tag">Toplam Anket</div><div class="sc-val">${total}</div><div class="sc-sub">seçili dönem</div></div>
+    <div class="sc c-gold"><div class="sc-tag">Ortalama Puan</div><div class="sc-val">${avg?avg.toFixed(2):'—'}</div><div class="sc-sub">/ 5.00</div></div>
+    <div class="sc c-red"><div class="sc-tag">Düşük Puan (1–2)</div><div class="sc-val">${bad}</div><div class="sc-sub">${total?((bad/total)*100).toFixed(1):0}% oran</div></div>
+    <div class="sc c-green"><div class="sc-tag">Promotör Anket (5)</div><div class="sc-val">${good}</div><div class="sc-sub">${total?((good/total)*100).toFixed(1):0}% oran</div></div>
+    <div class="sc c-purple"><div class="sc-tag">Aktif Temsilci</div><div class="sc-val">${reps}</div><div class="sc-sub">farklı temsilci</div></div>`;
+}
+
+// ── PODIUM ──
+function getRS(data){
+  const m={};
+  data.forEach(r=>{
+    if(!m[r.rep])m[r.rep]={name:r.rep,total:0,sum:0,s1:0,s2:0,s34:0,s5:0,s45:0,proj:r.proj};
+    m[r.rep].total++;m[r.rep].sum+=r.score;
+    if(r.score===1)m[r.rep].s1++;
+    if(r.score===2)m[r.rep].s2++;
+    if(r.score===3||r.score===4)m[r.rep].s34++;
+    if(r.score===5){m[r.rep].s5++;m[r.rep].s45++;}
+  });
+  return Object.values(m).map(r=>({...r,avg:r.sum/r.total}));
+}
+
+function renderPodium(){
+  const stats=getRS(filtered);
+  if(!stats.length){document.getElementById('podiumGrid').innerHTML='';return;}
+  const best=[...stats].sort((a,b)=>b.avg-a.avg).slice(0,3);
+  const worst=[...stats].sort((a,b)=>a.avg-b.avg).slice(0,3);
+  const list=(arr,cls)=>arr.map((r,i)=>`
+    <div class="pod-item clickable-row" onclick="openAgent('${r.name}')">
+      <div class="pod-rank r${i+1}">${i+1}</div>
+      <div class="pod-info"><div class="pod-name">${r.name}</div><div class="pod-detail">${r.total} anket · 1–2: ${r.s1+r.s2}</div></div>
+      <div class="pod-score" style="color:${cls==='best'?'var(--green)':'var(--red)'}">${r.avg.toFixed(2)}</div>
+    </div>`).join('');
+  document.getElementById('podiumGrid').innerHTML=`
+    <div class="pod-card"><div class="pod-head best">🏆 En İyi 3 Temsilci</div>${list(best,'best')}</div>
+    <div class="pod-card"><div class="pod-head worst">⚠ En Düşük 3 Temsilci</div>${list(worst,'worst')}</div>`;
+}
+
+// ── CHARTS ──
+function dc(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
+function renderCharts(){
+  const r=filtered;
+  const dist=[0,0,0,0,0];r.forEach(v=>dist[v.score-1]++);
+  dc('dist');charts.dist=new Chart(document.getElementById('cDist').getContext('2d'),{type:'bar',data:{labels:['1★','2★★','3★★★','4★★★★','5★★★★★'],datasets:[{data:dist,backgroundColor:['#e83b3b','#c02929','#f0b429','#c9960e','#22c97a'],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} anket — ${['Detractör','Detractör','Pasif','Pasif','Promotör'][ctx.dataIndex]}`}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#7a8aaa',font:{size:11}}},y:{grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1}}},responsive:true}});
+  const stats=getRS(r).sort((a,b)=>b.avg-a.avg).slice(0,10);
+  dc('rep');charts.rep=new Chart(document.getElementById('cRep').getContext('2d'),{type:'bar',data:{labels:stats.map(s=>s.name),datasets:[{label:'Ort.',data:stats.map(s=>+s.avg.toFixed(2)),backgroundColor:stats.map(s=>s.avg>=4.85?'#22c97a':s.avg>=4.70?'#f0b429':'#e83b3b'),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Ort: ${ctx.parsed.x} — ${ctx.parsed.x>=4.85?'Promotör Bölgesi':ctx.parsed.x>=4.70?'Pasif Bölge':'Detractör Bölge'}`}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670'},min:0,max:5},y:{grid:{display:false},ticks:{color:'#7a8aaa'}}},responsive:true}});
+  renderTrend();renderDispoChart();
+}
+
+function setTM(m,el){trendMode=m;document.querySelectorAll('.tt').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderTrend();}
+function renderTrend(){
+  const days={};filtered.forEach(v=>{
+    if(!days[v.date])days[v.date]={sum:0,cnt:0,bad:0};
+    days[v.date].sum+=v.score;days[v.date].cnt++;
+    if(v.score<=2)days[v.date].bad++;
+  });
+  const labels=Object.keys(days).sort();
+  if(!labels.length){dc('trend');return;}
+  const vals=labels.map(d=>trendMode==='avg'?+(days[d].sum/days[d].cnt).toFixed(2):trendMode==='bad'?days[d].bad:days[d].cnt);
+  const color=trendMode==='bad'?'#e83b3b':trendMode==='avg'?'#2d7ef7':'#22c97a';
+  // özet bilgi
+  const avg7=labels.slice(-7).reduce((a,d)=>a+(trendMode==='avg'?days[d].sum/days[d].cnt:trendMode==='bad'?days[d].bad:days[d].cnt),0)/Math.min(labels.slice(-7).length,7);
+  const avgAll=vals.reduce((a,v)=>a+v,0)/vals.length;
+  const trend7=avg7>avgAll?'▲':'▼';
+  const trendColor=trendMode==='bad'?(avg7<avgAll?'#22c97a':'#e83b3b'):(avg7>avgAll?'#22c97a':'#e83b3b');
+  const sumEl=document.getElementById('trendSummary');
+  if(sumEl){
+    const label7=trendMode==='avg'?avg7.toFixed(2):Math.round(avg7);
+    const labelAll=trendMode==='avg'?avgAll.toFixed(2):Math.round(avgAll);
+    sumEl.innerHTML=`
+      <div style="background:var(--s3);border-radius:8px;padding:7px 14px;font-size:.72rem;">
+        <div style="color:var(--muted2);margin-bottom:2px">Son 7 gün</div>
+        <div style="font-weight:700;font-size:.95rem;color:${trendColor}">${trend7} ${label7}</div>
+      </div>
+      <div style="background:var(--s3);border-radius:8px;padding:7px 14px;font-size:.72rem;">
+        <div style="color:var(--muted2);margin-bottom:2px">Dönem ort.</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--text)">${labelAll}</div>
+      </div>
+      <div style="background:var(--s3);border-radius:8px;padding:7px 14px;font-size:.72rem;">
+        <div style="color:var(--muted2);margin-bottom:2px">Toplam gün</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--muted2)">${labels.length}</div>
+      </div>`;
+  }
+  // nokta renklendirme: avg modunda puanın rengi
+  const ptColors=trendMode==='avg'?vals.map(v=>v===5?'#22c97a':v>=3?'#f0b429':'#e83b3b'):vals.map(()=>color);
+  const yOpts=trendMode==='avg'?{min:1,max:5,ticks:{color:'#4a5670',stepSize:1},grid:{color:'#1a2336'},
+    afterDataLimits(axis){axis.min=1;axis.max=5;}}:{ticks:{color:'#4a5670',stepSize:1},grid:{color:'#1a2336'}};
+  dc('trend');charts.trend=new Chart(document.getElementById('cTrend').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:labels.map(l=>l.slice(5)),
+      datasets:[{
+        data:vals,borderColor:color,backgroundColor:color+'18',fill:true,
+        tension:.35,pointRadius:4,pointHoverRadius:7,borderWidth:2.5,
+        pointBackgroundColor:ptColors,pointBorderColor:'transparent',
+        pointBorderWidth:0
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        title:ctx=>labels[ctx[0].dataIndex],
+        label:ctx=>{
+          const d=days[labels[ctx.dataIndex]];
+          if(trendMode==='avg')return[` Ort: ${ctx.parsed.y}`,` Toplam: ${d.cnt} anket`,` 1–2 puan: ${d.bad}`];
+          if(trendMode==='bad')return[` ${ctx.parsed.y} düşük puan`,` Toplam: ${d.cnt} anket`];
+          return[` ${ctx.parsed.y} anket`,` Ort: ${(d.sum/d.cnt).toFixed(2)}`];
+        }
+      }}},
+      scales:{
+        x:{grid:{color:'#1a2336'},ticks:{color:'#7a8aaa',maxTicksLimit:14,font:{size:11}}},
+        y:yOpts
+      },
+      responsive:true
+    }
+  });
+}
+
+function renderDispoChart(){
+  const map={};
+  filtered.forEach(r=>{
+    if(!map[r.dispo])map[r.dispo]={s1:0,s2:0,total:0};
+    if(r.score===1)map[r.dispo].s1++;
+    if(r.score===2)map[r.dispo].s2++;
+    map[r.dispo].total++;
+  });
+  const keys=Object.keys(map).filter(k=>map[k].s1+map[k].s2>0)
+    .sort((a,b)=>(map[b].s1+map[b].s2)-(map[a].s1+map[a].s2)).slice(0,10);
+  if(!keys.length){dc('dispo');return;}
+  // kısa etiket: 35 karakterden uzunsa kes
+  const shortLabel=k=>k.length>38?k.slice(0,36)+'…':k;
+  dc('dispo');charts.dispo=new Chart(document.getElementById('cDispo').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:keys.map(shortLabel),
+      datasets:[
+        {label:'1 Puan ★',data:keys.map(k=>map[k].s1),backgroundColor:'#e83b3b',borderRadius:5,borderSkipped:false},
+        {label:'2 Puan ★★',data:keys.map(k=>map[k].s2),backgroundColor:'#f0b429',borderRadius:5,borderSkipped:false}
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      plugins:{
+        legend:{labels:{color:'#9aa8c0',font:{size:11},padding:16}},
+        tooltip:{callbacks:{
+          label:ctx=>{
+            const k=keys[ctx.dataIndex];
+            return` ${ctx.dataset.label}: ${ctx.parsed.x}  (toplam ${map[k].total} anket)`;
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1},stacked:true},
+        y:{grid:{display:false},ticks:{color:'#9aa8c0',font:{size:11}},stacked:true}
+      },
+      responsive:true
+    }
+  });
+}
+
+// ── REP TABLE ──
+function renderRepTable(){
+  const q=(document.getElementById('repSearch')||{}).value?.toLowerCase()||'';
+  const sort=document.getElementById('repSort')?.value||'avg_desc';
+  let stats=getRS(filtered).filter(r=>r.name.toLowerCase().includes(q));
+  if(sort==='avg_desc')stats.sort((a,b)=>b.avg-a.avg);
+  else if(sort==='avg_asc')stats.sort((a,b)=>a.avg-b.avg);
+  else if(sort==='bad_desc')stats.sort((a,b)=>(b.s1+b.s2)-(a.s1+a.s2));
+  else stats.sort((a,b)=>b.total-a.total);
+  const tb=document.getElementById('repTable');
+  if(!stats.length){tb.innerHTML='<tr><td colspan="9" style="padding:28px;color:var(--muted);text-align:center">Veri bulunamadı</td></tr>';return;}
+  tb.innerHTML=stats.map((r,i)=>{
+    const bad12=r.s1+r.s2;
+    const mid34=r.s34||0;
+    const pro5=r.s5||r.s45||0;
+    const avgC=r.avg>=4.85?'var(--green)':r.avg>=4.70?'var(--gold)':'var(--red)';
+    const st=r.avg>=4.85
+      ?`<span style="background:rgba(34,201,122,.15);color:#22c97a;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;">✓ Hedefte</span>`
+      :r.avg>=4.70
+      ?`<span style="background:rgba(240,180,41,.15);color:#f0b429;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;">~ Hedefe Yakın</span>`
+      :`<span style="background:rgba(232,59,59,.15);color:#e83b3b;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;">✗ Hedef Altı</span>`;
+    return`<tr class="clickable-row" onclick="openAgent('${r.name}')">
+      <td style="color:var(--muted);font-size:.7rem">${i+1}</td>
+      <td style="font-weight:600">${r.name}</td>
+      <td style="font-size:.68rem;color:var(--muted2)">${r.proj}</td>
+      <td style="color:var(--muted2)">${r.total}</td>
+      <td style="font-weight:800;font-size:.88rem;color:${avgC}">${r.avg.toFixed(2)}</td>
+      <td style="text-align:center">${bad12>0?`<span style="background:rgba(232,59,59,.16);color:#ff5252;font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:12px;">${bad12}</span>`:`<span style="color:var(--border2)">—</span>`}</td>
+      <td style="text-align:center">${mid34>0?`<span style="background:rgba(240,180,41,.14);color:#f0b429;font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:12px;">${mid34}</span>`:`<span style="color:var(--border2)">—</span>`}</td>
+      <td style="text-align:center">${pro5>0?`<span style="background:rgba(34,201,122,.16);color:#22c97a;font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:12px;">${pro5}</span>`:`<span style="color:var(--border2)">—</span>`}</td>
+      <td>${st}</td></tr>`;
+  }).join('');
+}
+
+// ── DISPO ──
+function renderDispoGrid(){
+  const map={};filtered.forEach(r=>{if(!map[r.dispo])map[r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,t:0};map[r.dispo][`s${r.score}`]++;map[r.dispo].t++;});
+  const dispos=Object.entries(map).sort((a,b)=>(b[1].s1+b[1].s2)-(a[1].s1+a[1].s2));
+  const g=document.getElementById('dispoGrid');
+  if(!dispos.length){g.innerHTML='<div style="color:var(--muted);padding:28px">Veri yok</div>';return;}
+  g.innerHTML=dispos.map(([d,v])=>{
+    const mx=Math.max(v.s1,v.s2,v.s3,v.s4,v.s5,1);
+    const bars=[{l:'1 Puan',val:v.s1,c:'#e83b3b'},{l:'2 Puan',val:v.s2,c:'#c02929'},{l:'3 Puan',val:v.s3,c:'#f0b429'},{l:'4 Puan',val:v.s4,c:'#c9960e'},{l:'5 Puan',val:v.s5,c:'#22c97a'}];
+    return`<div class="dcard"><div class="dcard-name">${d} <span style="color:var(--muted);font-size:.63rem">(${v.t})</span></div>${bars.map(b=>`<div class="dbar"><div class="dbar-lbl">${b.l}</div><div class="dbar-bg"><div class="dbar-fill" style="width:${(b.val/mx*100)}%;background:${b.c}"></div></div><div class="dbar-n">${b.val}</div></div>`).join('')}</div>`;
+  }).join('');
+}
+
+// ── CROSS ──
+function setCX(m,el){cxMode=m;document.querySelectorAll('.cx-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderCross();}
+function buildCM(data){const m={};data.forEach(r=>{if(!m[r.rep])m[r.rep]={};if(!m[r.rep][r.dispo])m[r.rep][r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,sum:0,total:0};const c=m[r.rep][r.dispo];c[`s${r.score}`]++;c.sum+=r.score;c.total++;});return m;}
+function renderCross(){
+  const data=filtered;if(!data.length){document.getElementById('rdCards').innerHTML='';document.getElementById('hmWrap').innerHTML='';document.getElementById('worstPairs').innerHTML='';return;}
+  const cross=buildCM(data);const reps=Object.keys(cross).sort();const dispos=[...new Set(data.map(r=>r.dispo))].sort();
+  // rd cards
+  const repsSorted=reps.map(rep=>{let bad=0,total=0;dispos.forEach(d=>{const c=cross[rep][d];if(c){bad+=c.s1+c.s2;total+=c.total;}});return{rep,bad,total,avg:total?(Object.values(cross[rep]).reduce((a,c)=>a+c.sum,0)/total):0};}).sort((a,b)=>b.bad-a.bad);
+  const cards=repsSorted.map(({rep,bad,avg})=>{
+    const de=Object.entries(cross[rep]).map(([d,c])=>({d,bad12:c.s1+c.s2,avg:c.total?c.sum/c.total:0,s1:c.s1,s2:c.s2,total:c.total})).filter(e=>e.total>0).sort((a,b)=>b.bad12-a.bad12);
+    const mx=Math.max(...de.map(e=>e.bad12),1);
+    const ac=avg>=4.85?'var(--green)':avg>=4.70?'var(--gold)':'var(--red)';
+    const rows=de.slice(0,5).map(e=>{const bw=Math.round(e.bad12/mx*100);const bc=e.bad12>=3?'#e83b3b':e.bad12>=1?'#f0b429':'#3a4a6b';return`<div class="rd-row"><div class="rd-dname">${e.d}</div><div class="rd-bw"><div class="rd-bf" style="width:${bw}%;background:${bc}"></div></div><div style="display:flex;gap:4px">${e.s1?`<span class="rd-mb" style="background:rgba(232,59,59,.15);color:var(--red)">1×${e.s1}</span>`:''} ${e.s2?`<span class="rd-mb" style="background:rgba(240,180,41,.15);color:var(--gold)">2×${e.s2}</span>`:''} ${!e.s1&&!e.s2?`<span class="rd-mb" style="background:rgba(34,201,122,.08);color:#22c97a">✓</span>`:''}</div><div style="font-size:.63rem;color:var(--muted2);width:24px;text-align:right">${e.total}</div></div>`;}).join('');
+    const bt=bad>=5?'var(--red)':bad>=2?'var(--gold)':'var(--border)';
+    return`<div class="rd-card" style="border-top:2px solid ${bt}"><div class="rd-head"><div class="rd-name">${rep}</div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:.63rem;color:var(--red)">${bad>0?`⚠ ${bad}`:''}</span><div style="font-weight:700;font-size:.82rem;color:${ac}">${avg.toFixed(2)}</div></div></div>${rows||'<div style="padding:11px 14px;color:var(--muted);font-size:.7rem">Düşük puan yok ✓</div>'}</div>`;
+  }).join('');
+  document.getElementById('rdCards').innerHTML=`<div class="rd-cards">${cards}</div>`;
+  // heatmap
+  const topReps=[...reps].sort((a,b)=>Object.values(cross[b]).reduce((s,c)=>s+c.total,0)-Object.values(cross[a]).reduce((s,c)=>s+c.total,0)).slice(0,15);
+  const dt={};data.forEach(r=>dt[r.dispo]=(dt[r.dispo]||0)+1);
+  const topDispos=Object.keys(dt).sort((a,b)=>dt[b]-dt[a]).slice(0,10);
+  let gmax=1;topReps.forEach(rep=>topDispos.forEach(d=>{const c=cross[rep]?.[d];if(c){const v=cxMode==='bad12'?c.s1+c.s2:cxMode==='avg'?c.sum/c.total:c.total;if(v>gmax)gmax=v;}}));
+  const hdr=topDispos.map(d=>`<th>${d}</th>`).join('');
+  const body=topReps.map(rep=>{
+    const cells=topDispos.map(d=>{
+      const c=cross[rep]?.[d];
+      if(!c||c.total===0)return`<td><div class="hm-cell" style="color:var(--border2)">—</div></td>`;
+      let val,disp,bg,tc;
+      if(cxMode==='bad12'){val=c.s1+c.s2;disp=val;const i=Math.min(val/Math.max(gmax,1),1);if(val===0){bg='rgba(34,201,122,.08)';tc='var(--muted)';}else{const r2=Math.round(232*i+34*(1-i)),g2=Math.round(59*i+201*(1-i)),b2=Math.round(59*i+122*(1-i));bg=`rgba(${r2},${g2},${b2},${.12+i*.35})`;tc=i>.5?'var(--red)':'var(--gold)';}}
+      else if(cxMode==='avg'){val=c.sum/c.total;disp=val.toFixed(1);tc=val>=4.85?'var(--green)':val>=4.70?'var(--gold)':'var(--red)';bg=val>=4.85?'rgba(34,201,122,.10)':val>=4.70?'rgba(240,180,41,.10)':'rgba(232,59,59,.13)';}
+      else{val=c.total;disp=val;const i=Math.min(val/gmax,1);bg=`rgba(45,126,247,${.06+i*.25})`;tc='var(--accent)';}
+      return`<td title="${rep} / ${d}"><div class="hm-cell" style="background:${bg};color:${tc}">${disp}</div></td>`;
+    }).join('');
+    const rb=topDispos.reduce((s,d)=>s+(cross[rep]?.[d]?.s1||0)+(cross[rep]?.[d]?.s2||0),0);
+    return`<tr><td class="hm-rep">${rep}${rb>0?`<span style="font-size:.58rem;color:var(--red);margin-left:5px">⚠${rb}</span>`:''}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('hmWrap').innerHTML=`<table class="hm-table"><thead><tr><th style="text-align:left">Temsilci \\ Dispo</th>${hdr}</tr></thead><tbody>${body}</tbody></table>`;
+  // worst pairs
+  const pairs=[];reps.forEach(rep=>{Object.entries(cross[rep]).forEach(([d,c])=>{if(c.total===0)return;pairs.push({rep,dispo:d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.sum/c.total,total:c.total});});});
+  pairs.sort((a,b)=>b.bad12-a.bad12);
+  document.getElementById('worstPairs').innerHTML=pairs.slice(0,10).map((p,i)=>{
+    const risk=p.bad12>=5?`<span class="risk-hi">🔴 Yüksek</span>`:p.bad12>=2?`<span class="risk-md">🟡 Orta</span>`:`<span class="risk-lo">🟢 Düşük</span>`;
+    const ac=p.avg>=4.85?'var(--green)':p.avg>=4.70?'var(--gold)':'var(--red)';
+    return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:500">${p.rep}</td><td style="color:var(--muted2)">${p.dispo}</td><td style="color:var(--red);font-weight:700">${p.s1}</td><td style="color:var(--gold);font-weight:700">${p.s2}</td><td style="font-weight:700;color:var(--red)">${p.bad12}</td><td style="color:${ac};font-weight:600">${p.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
+  }).join('');
+}
+
+// ── KAYITLAR ──
+function renderAll2(){
+  const rQ=(document.getElementById('fRep')||{}).value?.toLowerCase()||'';
+  const dQ=(document.getElementById('fDispo')||{}).value?.toLowerCase()||'';
+  const sQ=(document.getElementById('fScore')||{}).value||'';
+  const tQ=(document.getElementById('fTL')||{}).value?.toLowerCase()||'';
+  const cQ=(document.getElementById('fCallId')||{}).value?.toLowerCase()||'';
+  const rows=filtered.filter(r=>{
+    if(rQ&&!r.rep.toLowerCase().includes(rQ))return false;
+    if(dQ&&!r.dispo.toLowerCase().includes(dQ))return false;
+    if(sQ&&r.score!==parseInt(sQ))return false;
+    if(tQ&&!(r.teamLeader||'').toLowerCase().includes(tQ))return false;
+    if(cQ&&!(r.callId||'').toLowerCase().includes(cQ))return false;
+    return true;
+  });
+  document.getElementById('allCount').textContent=rows.length+' kayıt';
+  const tb=document.getElementById('allTable');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Kayıt bulunamadı</td></tr>';return;}
+  tb.innerHTML=rows.map((r,i)=>`<tr>
+    <td style="color:var(--muted)">${i+1}</td>
+    <td>${r.rep}</td><td>${r.date}</td>
+    <td style="color:var(--muted2);font-size:.73rem">${r.dispo}</td>
+    <td><span class="badge b${r.score}">${scoreStars(r.score)}</span></td>
+    <td style="font-size:.72rem;color:var(--accent)">${r.teamLeader||'—'}</td>
+    <td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td></tr>`).join('');
+}
+function clearF(){['fRep','fDispo','fScore','fTL','fCallId'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderAll2();}
+function exportCSV(){
+  const h=['Temsilci','Tarih','Dispo','Puan','Team Leader','Proje'];
+  const rows=filtered.map(r=>[r.rep,r.date,r.dispo,r.score,r.teamLeader||'',r.proj].map(v=>`"${v}"`).join(','));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+[h.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'}));
+  a.download='seller_voice_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// ══ AGENT PROFILE ══
+
+function amTab(id,el){
+  document.querySelectorAll('.am-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.am-sec').forEach(s=>s.style.display='none');
+  document.getElementById('amSec_'+id).style.display='block';
+  if(id==='gelisim')renderAgentGelisim();
+}
+
+function openAgent(name){
+  const data=filtered.filter(r=>r.rep===name);
+  if(!data.length){toast('Bu dönemde veri yok','err');return;}
+  // destroy old charts
+  Object.values(agentCharts).forEach(c=>c.destroy());agentCharts={};
+
+  // header
+  const initials=name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  document.getElementById('amAvatar').textContent=initials;
+  document.getElementById('amName').textContent=name;
+  const avg=data.reduce((s,r)=>s+r.score,0)/data.length;
+  const bad=data.filter(r=>r.score<=2).length;
+  const proj=[...new Set(data.map(r=>r.proj))].join(', ');
+  const tl=[...new Set(data.map(r=>r.teamLeader).filter(Boolean))].join(', ')||'—';
+  document.getElementById('amMeta').textContent=`${data.length} anket · Ort: ${avg.toFixed(2)} · Düşük puan: ${bad} · TL: ${tl} · ${proj}`;
+
+  // stats
+  const s1=data.filter(r=>r.score===1).length,s2=data.filter(r=>r.score===2).length,s45=data.filter(r=>r.score===5).length;
+  const dates=[...new Set(data.map(r=>r.date))].sort();
+  document.getElementById('amStats').innerHTML=`
+    <div class="sc c-gold"><div class="sc-tag">Ort. Puan</div><div class="sc-val">${avg.toFixed(2)}</div><div class="sc-sub">/ 5.00</div></div>
+    <div class="sc c-blue"><div class="sc-tag">Toplam Anket</div><div class="sc-val">${data.length}</div><div class="sc-sub">seçili dönem</div></div>
+    <div class="sc c-red"><div class="sc-tag">1 Puan</div><div class="sc-val">${s1}</div><div class="sc-sub">${((s1/data.length)*100).toFixed(0)}%</div></div>
+    <div class="sc c-red" style="--gc:rgba(240,180,41,.07)"><div class="sc-tag" style="--dc:var(--gold)">2 Puan</div><div class="sc-val" style="color:var(--gold)">${s2}</div><div class="sc-sub">${((s2/data.length)*100).toFixed(0)}%</div></div>
+    <div class="sc c-green"><div class="sc-tag">5 Puan (Promotör)</div><div class="sc-val">${s45}</div><div class="sc-sub">${((s45/data.length)*100).toFixed(0)}%</div></div>
+    <div class="sc c-purple"><div class="sc-tag">Aktif Gün</div><div class="sc-val">${dates.length}</div><div class="sc-sub">farklı gün</div></div>`;
+
+  // trend
+  const dayMap={};data.forEach(r=>{if(!dayMap[r.date])dayMap[r.date]={sum:0,cnt:0};dayMap[r.date].sum+=r.score;dayMap[r.date].cnt++;});
+  const tLabels=Object.keys(dayMap).sort();
+  const tData=tLabels.map(d=>(dayMap[d].sum/dayMap[d].cnt).toFixed(2));
+  const amTrendColors=tData.map(v=>v>=4.85?'#22c97a':v>=4.70?'#f0b429':'#e83b3b');
+  agentCharts.trend=new Chart(document.getElementById('amTrend').getContext('2d'),{type:'line',data:{labels:tLabels.map(l=>l.slice(5)),datasets:[{data:tData,borderColor:'#2d7ef7',backgroundColor:'#2d7ef715',fill:true,tension:.4,pointRadius:5,borderWidth:2,pointBackgroundColor:amTrendColors,pointBorderColor:'#0e1420',pointBorderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Ort: ${ctx.parsed.y} — ${ctx.parsed.y>=4.85?'Promotör':ctx.parsed.y>=4.70?'Pasif':'Detractör'}`}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670'}},y:{grid:{color:'#1a2336'},ticks:{color:'#4a5670'},min:1,max:5}},responsive:true}});
+
+  // dist
+  const dist=[0,0,0,0,0];data.forEach(r=>dist[r.score-1]++);
+  agentCharts.dist=new Chart(document.getElementById('amDist').getContext('2d'),{type:'doughnut',data:{labels:['1★','2★★','3★★★','4★★★★','5★★★★★'],datasets:[{data:dist,backgroundColor:['#e83b3b','#c02929','#f0b429','#c9960e','#22c97a'],borderWidth:0,hoverOffset:6}]},options:{plugins:{legend:{position:'right',labels:{color:'#7a8aaa',font:{size:11},padding:12}}},responsive:true,cutout:'60%'}});
+
+  // dispo chart
+  const dm={};data.forEach(r=>{if(!dm[r.dispo])dm[r.dispo]={s1:0,s2:0};if(r.score===1)dm[r.dispo].s1++;if(r.score===2)dm[r.dispo].s2++;});
+  const dkeys=Object.keys(dm).sort((a,b)=>(dm[b].s1+dm[b].s2)-(dm[a].s1+dm[a].s2)).slice(0,8);
+  agentCharts.dispo=new Chart(document.getElementById('amDispo').getContext('2d'),{type:'bar',data:{labels:dkeys,datasets:[{label:'1 Puan — Detractör',data:dkeys.map(k=>dm[k].s1),backgroundColor:'#e83b3b',borderRadius:4,borderSkipped:false},{label:'2 Puan — Detractör',data:dkeys.map(k=>dm[k].s2),backgroundColor:'#c02929',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{labels:{color:'#9aa8c0'}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#7a8aaa'},stacked:true},y:{grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1},stacked:true}},responsive:true}});
+
+  // records
+  const sorted=[...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  document.getElementById('amRecords').innerHTML=sorted.map(r=>`<tr><td>${r.date}</td><td style="font-size:.72rem;color:var(--muted2)">${r.dispo}</td><td><span class="badge b${r.score}">${scoreStars(r.score)}</span></td><td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td></tr>`).join('');
+
+  // sekmeleri sıfırla
+  document.querySelectorAll('.am-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.am-sec').forEach((s,i)=>s.style.display=i===0?'block':'none');
+  document.getElementById('agentModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeAgent(){
+  document.getElementById('agentModal').classList.remove('open');
+  document.body.style.overflow='';
+  Object.values(agentCharts).forEach(c=>c.destroy());agentCharts={};
+}
+
+document.getElementById('agentModal').addEventListener('click',function(e){if(e.target===this)closeAgent();});
+
+
+// ══ GELİŞİM RAPORU ══
+// Mantık: Her haftayı ayrı bir dilim olarak analiz et.
+// Kıyasla: Ort. puan, 1-2 puan oranı, toplam anket, en sık dispo'lar.
+// Trend: Son 4 haftanın grafiği + metin değerlendirme.
+function renderAgentGelisim(){
+  const wrap=document.getElementById('amGelisimContent');
+  const name=document.getElementById('amName').textContent;
+  const data=filtered.filter(r=>r.rep===name);
+  if(data.length<5){wrap.innerHTML='<div style="color:var(--muted);padding:28px;text-align:center">Yeterli veri yok (en az 5 anket gerekli)</div>';return;}
+
+  // Haftaları oluştur
+  const weekMap={};
+  data.forEach(r=>{
+    const d=new Date(r.date);
+    // Pzt başlangıçlı hafta
+    const day=d.getDay()||7; // 1=Pzt
+    const pzt=new Date(d);pzt.setDate(d.getDate()-day+1);
+    const key=pzt.toISOString().slice(0,10);
+    if(!weekMap[key])weekMap[key]={key,dates:new Set(),total:0,sum:0,bad:0,s1:0,s2:0,s3:0,s4:0,s5:0,dispos:{}};
+    const w=weekMap[key];
+    w.total++;w.sum+=r.score;w.dates.add(r.date);
+    if(r.score<=2)w.bad++;
+    w['s'+r.score]++;
+    w.dispos[r.dispo]=(w.dispos[r.dispo]||0)+1;
+  });
+
+  const weeks=Object.values(weekMap).sort((a,b)=>a.key.localeCompare(b.key));
+  weeks.forEach(w=>{w.avg=w.sum/w.total;w.badRate=w.bad/w.total;w.activeDays=w.dates.size;});
+
+  // Son hafta vs önceki hafta karşılaştır
+  const last=weeks[weeks.length-1];
+  const prev=weeks.length>=2?weeks[weeks.length-2]:null;
+
+  // Genel trend (lineer regresyon eğimi)
+  const avgs=weeks.map(w=>w.avg);
+  let trend=0;
+  if(avgs.length>=3){
+    const n=avgs.length,xi=d=>d,yi=d=>avgs[d];
+    const sx=avgs.reduce((_,__,i)=>_+i,0),sy=avgs.reduce((a,v)=>a+v,0);
+    const sxy=avgs.reduce((a,v,i)=>a+i*v,0),sx2=avgs.reduce((a,_,i)=>a+i*i,0);
+    trend=(n*sxy-sx*sy)/(n*sx2-sx*sx);
+  }
+
+  // Puanlama sistemi
+  const avgScore=data.reduce((a,r)=>a+r.score,0)/data.length;
+  const badRate=data.filter(r=>r.score<=2).length/data.length;
+
+  const trendText=trend>0.05?'📈 Yükseliş eğiliminde':trend<-0.05?'📉 Düşüş eğiliminde':'➡️ Stabil seyirde';
+  const trendColor=trend>0.05?'#22c97a':trend<-0.05?'#e83b3b':'#f0b429';
+
+  // Genel değerlendirme
+  let genelMsg='';
+  if(avgScore>=4.85&&badRate<0.05)genelMsg='🏆 Üst düzey performans. Mükemmel değerlendirme.';
+  else if(avgScore>=4.70&&badRate<0.1)genelMsg='✅ Güçlü performans. Hedeflerin üzerinde.';
+  else if(avgScore>=3.5)genelMsg='⚡ Ortalamanın üzerinde. Küçük gelişimlerle mükemmele ulaşabilir.';
+  else if(avgScore>=3)genelMsg='⚠️ Ortalama düzeyde. Gelişim alanları mevcut.';
+  else genelMsg='🔴 Gelişim gerekiyor. Yöneticisiyle birebir değerlendirme önerilir.';
+
+  // En sorunlu dispo
+  const dispoMap={};data.forEach(r=>{if(r.score<=2){if(!dispoMap[r.dispo])dispoMap[r.dispo]=0;dispoMap[r.dispo]++;}});
+  const topDispoBad=Object.entries(dispoMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  // Değişim ikonları
+  const chg=(curr,prv,inv=false)=>{
+    if(!prv)return'';
+    const d=curr-prv;
+    if(Math.abs(d)<0.01)return'<span style="color:var(--muted)">—</span>';
+    const up=inv?(d<0):(d>0);
+    return`<span style="color:${up?'#22c97a':'#e83b3b'};font-size:.75rem">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(2)}</span>`;
+  };
+
+  // Haftalık tablo HTML
+  const weekRows=weeks.slice(-8).reverse().map((w,i)=>{
+    const isLast=i===0;
+    const prevW=weeks.slice(-8).reverse()[i+1];
+    const avgDiff=prevW?w.avg-prevW.avg:null;
+    const badDiff=prevW?w.bad-prevW.bad:null;
+    const avgColor=w.avg>=4.85?'#22c97a':w.avg>=4.70?'#f0b429':'#e83b3b';
+    return`<tr style="${isLast?'background:rgba(45,126,247,.06);':''}">
+      <td style="font-weight:${isLast?700:400};color:${isLast?'var(--accent)':'var(--text)'}">
+        ${isLast?'<span style="font-size:.6rem;background:var(--accent);color:white;padding:1px 5px;border-radius:3px;margin-right:5px">SON</span>':''}
+        ${w.key}
+      </td>
+      <td style="text-align:center">${w.total}</td>
+      <td style="text-align:center">${w.activeDays} gün</td>
+      <td style="font-weight:700;color:${avgColor};text-align:center">
+        ${w.avg.toFixed(2)}
+        ${avgDiff!==null?`<span style="font-size:.62rem;color:${avgDiff>0?'#22c97a':avgDiff<0?'#e83b3b':'var(--muted)'};margin-left:4px">${avgDiff>0?'▲':'▼'} ${Math.abs(avgDiff).toFixed(2)}</span>`:''}
+      </td>
+      <td style="text-align:center;color:${w.bad>0?'#e83b3b':'var(--muted)'};">
+        ${w.bad}
+        ${badDiff!==null&&badDiff!==0?`<span style="font-size:.62rem;color:${badDiff<0?'#22c97a':'#e83b3b'};margin-left:4px">${badDiff>0?'▲':'▼'} ${Math.abs(badDiff)}</span>`:''}
+      </td>
+      <td style="text-align:center"><span class="badge b${Math.round(w.avg)}">${scoreStars(Math.round(w.avg))}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Haftalık trend mini grafik (canvas id ile render edilecek)
+  wrap.innerHTML=`
+    <!-- GENEL DEĞERLENDİRME -->
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;">
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:8px">Genel Değerlendirme</div>
+      <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">${genelMsg}</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;">
+        <div style="background:var(--s3);border-radius:8px;padding:8px 14px;text-align:center">
+          <div style="font-size:.62rem;color:var(--muted2)">Dönem Ort.</div>
+          <div style="font-size:1.2rem;font-weight:800;color:${avgScore>=4.85?'#22c97a':avgScore>=4.70?'#f0b429':'#e83b3b'}">${avgScore.toFixed(2)}</div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:8px 14px;text-align:center">
+          <div style="font-size:.62rem;color:var(--muted2)">1–2 Puan Oranı</div>
+          <div style="font-size:1.2rem;font-weight:800;color:${badRate<0.1?'#22c97a':badRate<0.2?'#f0b429':'#e83b3b'}">${(badRate*100).toFixed(0)}%</div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:8px 14px;text-align:center">
+          <div style="font-size:.62rem;color:var(--muted2)">Haftalık Trend</div>
+          <div style="font-size:.9rem;font-weight:700;color:${trendColor}">${trendText}</div>
+        </div>
+        ${prev?`<div style="background:var(--s3);border-radius:8px;padding:8px 14px;text-align:center">
+          <div style="font-size:.62rem;color:var(--muted2)">Bu hafta vs geçen hafta</div>
+          <div style="font-size:.9rem;font-weight:700;color:${last.avg>=prev.avg?'#22c97a':'#e83b3b'}">${last.avg>=prev.avg?'▲ İyileşme':'▼ Gerileme'} (${Math.abs(last.avg-prev.avg).toFixed(2)} puan)</div>
+        </div>`:''}
+      </div>
+    </div>
+
+    <!-- HAFTALIK TREND GRAFİĞİ -->
+    <div class="cc" style="margin-bottom:18px;">
+      <div class="cc-title">Haftalık Ortalama Puan Trendi</div>
+      <canvas id="amWeekTrend" height="140"></canvas>
+    </div>
+
+    <!-- HAFTALIK TABLO -->
+    <div class="cc" style="margin-bottom:18px;">
+      <div class="cc-title">Hafta Hafta Karşılaştırma</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.76rem;">
+          <thead>
+            <tr style="color:var(--muted2);border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:8px 10px;font-weight:500">Hafta Başlangıcı</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:500">Anket</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:500">Aktif Gün</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:500">Ort. Puan</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:500">1–2 Puan</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:500">Seviye</th>
+            </tr>
+          </thead>
+          <tbody style="color:var(--text)">${weekRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EN SORUNLU DİSPO'LAR -->
+    ${topDispoBad.length?`<div class="cc" style="margin-bottom:18px;">
+      <div class="cc-title">⚠️ Düşük Puanın En Çok Geldiği Dispo'lar</div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+        ${topDispoBad.map(([d,n],i)=>{
+          const maxN=topDispoBad[0][1];
+          return`<div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:20px;color:var(--muted2);font-size:.68rem;text-align:right">${i+1}.</div>
+            <div style="flex:1;font-size:.75rem;color:var(--text)">${d}</div>
+            <div style="width:120px;background:var(--s3);border-radius:4px;overflow:hidden;height:8px">
+              <div style="width:${n/maxN*100}%;height:100%;background:#e83b3b;border-radius:4px"></div>
+            </div>
+            <div style="width:28px;text-align:right;font-weight:700;color:#e83b3b;font-size:.75rem">${n}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+  `;
+
+  // Haftalık trend chart
+  if(agentCharts.weekTrend)agentCharts.weekTrend.destroy();
+  const wkLabels=weeks.map(w=>w.key.slice(5));
+  const wkData=weeks.map(w=>+w.avg.toFixed(2));
+  const ptColors=wkData.map(v=>v>=4.85?'#22c97a':v>=4.70?'#f0b429':'#e83b3b');
+  agentCharts.weekTrend=new Chart(document.getElementById('amWeekTrend').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:wkLabels,
+      datasets:[
+        {label:'Haftalık Ort.',data:wkData,borderColor:'#2d7ef7',backgroundColor:'#2d7ef718',fill:true,
+         tension:.35,pointRadius:6,pointHoverRadius:8,borderWidth:2.5,
+         pointBackgroundColor:ptColors,pointBorderColor:'#0e1420',pointBorderWidth:2},
+        {label:'Dönem Ort.',data:wkData.map(()=>+avgScore.toFixed(2)),borderColor:'rgba(240,180,41,.4)',
+         borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}
+      ]
+    },
+    options:{
+      plugins:{legend:{labels:{color:'#9aa8c0',font:{size:11}}},
+        tooltip:{callbacks:{label:ctx=>{
+          if(ctx.datasetIndex===1)return` Dönem ort: ${ctx.parsed.y}`;
+          const w=weeks[ctx.dataIndex];
+          return[` Ort: ${ctx.parsed.y}`,` Anket: ${w.total}`,` 1–2 puan: ${w.bad}`];
+        }}}},
+      scales:{
+        x:{grid:{color:'#1a2336'},ticks:{color:'#7a8aaa',font:{size:11}}},
+        y:{min:1,max:5,grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1}}
+      },
+      responsive:true
+    }
+  });
+}
+
+// ══ TEAM LEADER ══
+function getTLStats(data){
+  const m={};
+  data.forEach(r=>{
+    const tl=r.teamLeader||'(Atanmamış)';
+    if(!m[tl])m[tl]={tl,reps:new Set(),total:0,sum:0,s1:0,s2:0,s45:0};
+    m[tl].reps.add(r.rep);
+    m[tl].total++;m[tl].sum+=r.score;
+    if(r.score===1)m[tl].s1++;
+    if(r.score===2)m[tl].s2++;
+    if(r.score===5)m[tl].s45++;
+  });
+  return Object.values(m).map(t=>({...t,repCount:t.reps.size,avg:t.sum/t.total}));
+}
+
+function renderTL(){
+  Object.values(tlCharts).forEach(c=>c.destroy());tlCharts={};
+  const stats=getTLStats(filtered).sort((a,b)=>b.avg-a.avg);
+  if(!stats.length){
+    document.getElementById('tlStatGrid').innerHTML='<div style="color:var(--muted);padding:24px">Veri yok</div>';
+    return;
+  }
+
+  // Özet stat kartları
+  const bestTL=stats[0];const worstTL=stats[stats.length-1];
+  document.getElementById('tlStatGrid').innerHTML=`
+    <div class="sc c-blue"><div class="sc-tag">Team Leader Sayısı</div><div class="sc-val">${stats.length}</div><div class="sc-sub">aktif TL</div></div>
+    <div class="sc c-green"><div class="sc-tag">En İyi TL</div><div class="sc-val" style="font-size:1.1rem">${bestTL.tl}</div><div class="sc-sub">Ort: ${bestTL.avg.toFixed(2)} · ${bestTL.total} anket</div></div>
+    <div class="sc c-red"><div class="sc-tag">Gelişim Gereken TL</div><div class="sc-val" style="font-size:1.1rem">${worstTL.tl}</div><div class="sc-sub">Ort: ${worstTL.avg.toFixed(2)} · ${worstTL.total} anket</div></div>
+    <div class="sc c-gold"><div class="sc-tag">Toplam 1–2 Puan</div><div class="sc-val">${filtered.filter(r=>r.score<=2).length}</div><div class="sc-sub">tüm TL ekiplerinden</div></div>`;
+
+  // Ortalama puan grafik
+  const avgC=document.getElementById('cTLAvg').getContext('2d');
+  tlCharts.avg=new Chart(avgC,{type:'bar',data:{
+    labels:stats.map(s=>s.tl),
+    datasets:[{label:'Ort. Puan',data:stats.map(s=>+s.avg.toFixed(2)),
+      backgroundColor:stats.map(s=>s.avg>=4.85?'#22c97a':s.avg>=4.70?'#f0b429':'#e83b3b'),
+      borderRadius:5,borderSkipped:false}]
+  },options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670'},min:0,max:5},y:{grid:{display:false},ticks:{color:'#7a8aaa'}}},responsive:true}});
+
+  // 1-2 puan grafik
+  const badC=document.getElementById('cTLBad').getContext('2d');
+  tlCharts.bad=new Chart(badC,{type:'bar',data:{
+    labels:stats.map(s=>s.tl),
+    datasets:[
+      {label:'1 Puan',data:stats.map(s=>s.s1),backgroundColor:'#e83b3b',borderRadius:4,borderSkipped:false},
+      {label:'2 Puan',data:stats.map(s=>s.s2),backgroundColor:'#f0b429',borderRadius:4,borderSkipped:false},
+    ]
+  },options:{indexAxis:'y',plugins:{legend:{labels:{color:'#7a8aaa'}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670'},stacked:true},y:{grid:{display:false},ticks:{color:'#7a8aaa'},stacked:true}},responsive:true}});
+
+  // Detay tablosu
+  const tb=document.getElementById('tlTable');
+  tb.innerHTML=stats.map((t,i)=>{
+    const st=t.avg>=4.5?`<span style="color:var(--green)">● Mükemmel</span>`:t.avg>=3.5?`<span style="color:var(--accent)">● İyi</span>`:t.avg>=2.5?`<span style="color:var(--gold)">● Orta</span>`:`<span style="color:var(--red)">● Kritik</span>`;
+    return`<tr style="cursor:pointer" onclick="document.getElementById('tlSelect').value='${t.tl}';renderTLDetail()">
+      <td style="color:var(--muted)">${i+1}</td>
+      <td style="font-weight:700;color:var(--accent)">${t.tl}</td>
+      <td>${t.repCount} temsilci</td>
+      <td>${t.total}</td>
+      <td style="font-weight:700;color:${t.avg>=4.85?'var(--green)':t.avg>=4.70?'var(--gold)':'var(--red)'}">${t.avg.toFixed(2)}</td>
+      <td style="color:var(--red);font-weight:600">${t.s1}</td>
+      <td style="color:var(--gold);font-weight:600">${t.s2}</td>
+      <td style="color:var(--green)">${t.s45}</td>
+      <td>${st}</td></tr>`;
+  }).join('');
+}
+
+function renderTLDetail(){
+  const sel=document.getElementById('tlSelect').value;
+  const wrap=document.getElementById('tlDetailWrap');
+  if(!sel){wrap.innerHTML='';return;}
+  const data=filtered.filter(r=>(r.teamLeader||'(Atanmamış)')===sel);
+  if(!data.length){wrap.innerHTML='<div style="color:var(--muted);padding:20px">Bu TL için bu dönemde veri yok</div>';return;}
+  const repStats=getRS(data).sort((a,b)=>b.avg-a.avg);
+  wrap.innerHTML=`<div class="tbl-wrap" style="margin-top:0">
+   <div class="tbl-head"><span class="tbl-head-title">${sel} — ${repStats.length} Temsilci</span></div>
+   <table><thead><tr><th>#</th><th>Temsilci</th><th>Toplam</th><th>Ort. Puan</th><th style="color:var(--red)">1</th><th style="color:var(--gold)">2</th><th style="color:var(--green)">4–5</th><th>Durum</th></tr></thead>
+   <tbody>${repStats.map((r,i)=>{
+     const st=r.avg>=4.85?`<span style="color:var(--green)">● Promotör</span>`:r.avg>=4.70?`<span style="color:var(--gold)">● Pasif</span>`:`<span style="color:var(--red)">● Detractör</span>`;
+     return`<tr class="clickable-row" onclick="openAgent('${r.name}')">
+       <td style="color:var(--muted)">${i+1}</td>
+       <td style="font-weight:600">${r.name}</td>
+       <td>${r.total}</td>
+       <td style="font-weight:700;color:${r.avg>=4.85?'var(--green)':r.avg>=4.70?'var(--gold)':'var(--red)'}">${r.avg.toFixed(2)}</td>
+       <td style="color:var(--red);font-weight:600">${r.s1}</td>
+       <td style="color:var(--gold);font-weight:600">${r.s2}</td>
+       <td style="color:var(--green)">${r.s45}</td>
+       <td>${st}</td></tr>`;
+   }).join('')}</tbody></table></div>`;
+}
+
+// ══ HAKSIZ 1'LER ══
+function saveHaksiz(){localStorage.setItem('sv_haksiz',JSON.stringify(haksizList));}
+
+function hLookup(){
+  const val=document.getElementById('hCallId').value.trim().toLowerCase();
+  const hint=document.getElementById('hHint');
+  const repIn=document.getElementById('hRep');
+  if(!val){repIn.value='';hint.textContent='';return;}
+  const match=allRecords.find(r=>(r.callId||'').toLowerCase().trim()===val);
+  if(match){
+    repIn.value=match.rep;
+    hint.textContent=`✓ Bulundu — ${match.date} · ${match.dispo} · Puan: ${match.score}`;
+    hint.style.color='var(--green)';
+  }else{
+    repIn.value='';
+    hint.textContent='Bu dönemde bulunamadı — yine de ekleyebilirsiniz';
+    hint.style.color='var(--muted)';
+  }
+}
+
+function addHaksiz(){
+  const callId=document.getElementById('hCallId').value.trim();
+  const reason=document.getElementById('hReason').value.trim();
+  if(!callId){toast('CALL/CHAT ID boş olamaz','err');return;}
+  if(haksizList.find(h=>h.callId===callId)){toast('Bu ID zaten listede!','err');return;}
+  haksizList.push({callId,reason,addedAt:new Date().toISOString()});
+  saveHaksiz();
+  document.getElementById('hCallId').value='';
+  document.getElementById('hReason').value='';
+  document.getElementById('hHint').textContent='';
+  document.getElementById('hRep').value='';
+  renderHaksiz();toast('Eklendi ✓','ok');
+}
+
+function removeHaksiz(callId){haksizList=haksizList.filter(h=>h.callId!==callId);saveHaksiz();renderHaksiz();}
+function clearHaksiz(){if(!haksizList.length)return;haksizList=[];saveHaksiz();renderHaksiz();toast('Liste temizlendi','ok');}
+
+function renderHaksiz(){
+  const ids=new Set(haksizList.map(h=>h.callId.toLowerCase().trim()));
+  const allD=filtered,cleanD=filtered.filter(r=>!ids.has((r.callId||'').toLowerCase().trim()));
+  const tAvg=allD.length?allD.reduce((s,r)=>s+r.score,0)/allD.length:0;
+  const cAvg=cleanD.length?cleanD.reduce((s,r)=>s+r.score,0)/cleanD.length:0;
+  const diff=cAvg-tAvg;
+  document.getElementById('hcGrid').innerHTML=`
+    <div class="sc c-red"><div class="sc-tag">Mevcut Ortalama</div><div class="sc-val">${tAvg?tAvg.toFixed(2):'—'}</div><div class="sc-sub">${allD.length} toplam anket</div></div>
+    <div class="sc c-green"><div class="sc-tag">Düzeltilmiş Ort.</div><div class="sc-val">${cAvg?cAvg.toFixed(2):'—'}</div><div class="sc-sub">${haksizList.length} haksız 1 çıkarılınca</div></div>
+    <div class="sc ${diff>0?'c-gold':'c-blue'}"><div class="sc-tag">Fark</div><div class="sc-val">${diff>0?'+':''}${diff?diff.toFixed(2):'0.00'}</div><div class="sc-sub">${diff>0?'📈 gerçek performans daha iyi':'fark yok'}</div></div>`;
+
+  const tb=document.getElementById('hTable');
+  tb.innerHTML=!haksizList.length?'<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Henüz kayıt yok — CALL/CHAT ID ekleyin</td></tr>':
+    haksizList.map((h,i)=>{
+      const m=allRecords.find(r=>(r.callId||'').toLowerCase().trim()===h.callId.toLowerCase().trim());
+      return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-family:monospace;font-size:.7rem;color:var(--accent)">${h.callId}</td><td>${m?m.rep:'<span style="color:var(--muted2)">—</span>'}</td><td style="color:var(--muted2)">${m?m.date:'—'}</td><td style="color:var(--muted2);font-size:.72rem">${m?m.dispo:'—'}</td><td style="font-size:.73rem;color:var(--muted2)">${h.reason||'—'}</td><td><button class="sbtn sm" style="color:var(--red);border-color:rgba(232,59,59,.35)" onclick="removeHaksiz('${h.callId}')">Çıkar</button></td></tr>`;
+    }).join('');
+
+  const repMap={};allD.forEach(r=>{if(!repMap[r.rep])repMap[r.rep]={all:[],clean:[]};repMap[r.rep].all.push(r);if(!ids.has((r.callId||'').toLowerCase().trim()))repMap[r.rep].clean.push(r);});
+  const affected=Object.entries(repMap).filter(([,d])=>d.all.length!==d.clean.length);
+  document.getElementById('hRepTable').innerHTML=!affected.length?'<tr><td colspan="5" style="padding:22px;color:var(--muted);text-align:center">Eşleşen temsilci yok — dönem filtresini kontrol edin</td></tr>':
+    affected.map(([rep,d])=>{
+      const ca=d.all.reduce((s,r)=>s+r.score,0)/d.all.length;
+      const cla=d.clean.length?d.clean.reduce((s,r)=>s+r.score,0)/d.clean.length:0;
+      const df=cla-ca;
+      return`<tr><td style="font-weight:500">${rep}</td><td style="color:var(--red);font-weight:600">${ca.toFixed(2)}</td><td style="color:var(--green);font-weight:600">${cla?cla.toFixed(2):'—'}</td><td style="color:var(--gold);font-weight:700">${df>0?'+':''}${df.toFixed(2)}</td><td style="color:var(--muted2)">${d.all.length-d.clean.length} kayıt</td></tr>`;
+    }).join('');
+}
+
+// ══ DEMO ══
+function loadDemo(){
+  const reps=['yukselsimay.atas@bcciletisim.com.tr','sinaberrin.kilinc@bcciletisim.com.tr','gorkem.taser@bcciletisim.com.tr','hanificevahir.erkan@bcciletisim.com.tr','dilay.aytas@bcciletisim.com.tr','izel.satilmisgil@bcciletisim.com.tr','sati.ulusinan@bcciletisim.com.tr','elif.gedik@bcciletisim.com.tr','kubra.gocuk@bcciletisim.com.tr','tolga.atar@bcciletisim.com.tr','omer.celik@bcciletisim.com.tr'];
+  const teamLeaders={'yukselsimay.atas':'Osman Aslan','sinaberrin.kilinc':'Osman Aslan','gorkem.taser':'Osman Aslan','hanificevahir.erkan':'Osman Aslan','dilay.aytas':'Mehmet Yılmaz','izel.satilmisgil':'Mehmet Yılmaz','sati.ulusinan':'Mehmet Yılmaz','elif.gedik':'Ayşe Demir','kubra.gocuk':'Ayşe Demir','tolga.atar':'Ayşe Demir','omer.celik':'Ayşe Demir'};
+  const dispos=['Magaza 10+ dk bekletiyor, RA yapildi','Yeni ürün ekleme','Musteriye ulasamama, ulasildi','Satici siparisi hazirlayamiyor, iptal edildi','Siparis karisikligi, görsel istendi','Gorusme / Baglanti Kesildi','Siparisler karisti','Magaza kapali, siparis iptal edildi','Uzak mesafe, RA yapildi','Uygulama sorunu yasama','Kullanici ödeme yapamiyor','Pin hatasi var, lokasyon guncellendi','Bilgi talebi, uygulamaya yonlendirildi','Model degisikligi talebi'];
+  const projs=['TGO BCC Kurye Voice Hatay','TGO BCC Seller Voice'];
+  const today=new Date();const recs=[];
+  for(let d=0;d<60;d++){
+    const dd=new Date(today);dd.setDate(today.getDate()-d);
+    const dateStr=dd.toISOString().slice(0,10);
+    const cnt=8+Math.floor(Math.random()*12);
+    for(let i=0;i<cnt;i++){
+      const rawRep=reps[Math.floor(Math.random()*reps.length)];
+      const repKey=rawRep.split('@')[0];
+      const repName=repKey.replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      const tl=teamLeaders[repKey]||'Osman Aslan';
+      const dispo=dispos[Math.floor(Math.random()*dispos.length)];
+      const proj=projs[Math.floor(Math.random()*projs.length)];
+      const w=[6,10,18,36,30];let r=Math.random()*100,cum=0,score=5;
+      for(let s=0;s<5;s++){cum+=w[s];if(r<cum){score=s+1;break;}}
+      recs.push({id:recs.length,rep:repName,date:dateStr,dispo,score,
+        callId:`hq.prod${Math.floor(Math.random()*3)+1}.${1773000000000+recs.length}`,
+        teamLeader:tl,callTime:Math.floor(Math.random()*300)+30,proj,note:''});
+    }
+  }
+  allRecords=recs;
+  document.getElementById('setupOverlay').style.display='none';
+  document.getElementById('syncInfo').textContent='Demo — gerçek veri yapısı';
+  buildProjButtons();buildTLButtons();buildPastMonths();
+  setPeriod('month');
+  toast(`Demo: ${recs.length} kayıt, 60 gün, 3 TL, 2 proje`,'ok');
+}
+
+// ══ INIT ══
+window.addEventListener('DOMContentLoaded',()=>{
+  const cfg=getSavedConfig();
+  if(cfg?.sheets?.length){
+    document.getElementById('setupOverlay').style.display='none';
+    resyncAll();
+  } else {
+    renderSheetRows([{name:'TGO BCC Seller Voice',url:''}]);
+  }
+  const td=new Date().toISOString().slice(0,10);
+  document.getElementById('cfrom').value=new Date(new Date().setDate(new Date().getDate()-7)).toISOString().slice(0,10);
+  document.getElementById('cto').value=td;
+});
+
+// ══ TOAST ══
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
