@@ -349,14 +349,14 @@ footer span{font-size:.66rem;color:var(--muted);}
 
 <div class="filter-bar">
  <span class="fb-label">Dönem</span>
- <button class="pb active" onclick="setPeriod('today')">Bugün</button>
- <button class="pb" onclick="setPeriod('week')">Bu Hafta</button>
- <button class="pb" onclick="setPeriod('month')">Bu Ay</button>
+ <button class="pb active" data-period="today" onclick="setPeriod('today')">Bugün</button>
+ <button class="pb" data-period="week" onclick="setPeriod('week')">Bu Hafta</button>
+ <button class="pb" data-period="month" onclick="setPeriod('month')">Bu Ay</button>
  <div class="pm-wrap">
   <button class="pb" id="pmBtn" onclick="togglePM(event)">Geçmiş Aylar ▾</button>
   <div class="pm-drop" id="pmDrop"><div id="pmList"></div></div>
  </div>
- <button class="pb" onclick="setPeriod('all')">Tümü</button>
+ <button class="pb" data-period="all" onclick="setPeriod('all')">Tümü</button>
  <span class="fb-sep">|</span>
  <input type="date" class="ri" id="cfrom" onchange="setPeriod('custom')">
  <span style="color:var(--muted);font-size:.7rem">—</span>
@@ -559,7 +559,7 @@ footer span{font-size:.66rem;color:var(--muted);}
  <span>SELLER VOICE — Anket Performans Paneli | Veriler Google Sheets'ten canlı çekilmektedir.</span>
  <span style="display:flex;align-items:center;gap:16px;">
   <span id="footerInfo">—</span>
-  <span style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;opacity:.6;border-left:1px solid var(--border);padding-left:14px;">© 2025-2026 Muhammet Osman Aslan — BCC İletişim</span>
+  <span style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;opacity:.6;border-left:1px solid var(--border);padding-left:14px;">© 2025-2026 M.O.A — BCC İletişim</span>
  </span>
 </footer>
 <div class="toast" id="toast"></div>
@@ -780,8 +780,9 @@ function setTL(tl,el){
 function setPeriod(p){
   activePeriod=p;
   document.querySelectorAll('.pb').forEach(b=>b.classList.remove('active'));
-  const map={today:0,week:1,month:2,all:4};
-  if(map[p]!==undefined) document.querySelectorAll('.pb')[map[p]]?.classList.add('active');
+  // data-period ile buton bul — index'e güvenme
+  const btn=document.querySelector(`.pb[data-period="${p}"]`);
+  if(btn)btn.classList.add('active');
   if(p.startsWith('pm_')) document.getElementById('pmBtn')?.classList.add('active');
   document.getElementById('pmDrop').classList.remove('open');
   document.querySelectorAll('.pm-item').forEach(el=>el.classList.toggle('active',el.dataset.key===p));
@@ -808,14 +809,31 @@ function buildPastMonths(){
 function applyFilters(){
   const now=new Date();
   let from,to;
-  if(activePeriod==='today'){from=to=now.toISOString().slice(0,10);}
-  else if(activePeriod==='week'){const d=new Date(now);d.setDate(now.getDate()-now.getDay()+1);from=d.toISOString().slice(0,10);to=now.toISOString().slice(0,10);}
-  else if(activePeriod==='month'){from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;to=now.toISOString().slice(0,10);}
-  else if(activePeriod.startsWith('pm_')){
-    const ym=activePeriod.replace('pm_','');const[y,m]=ym.split('-');
-    from=`${ym}-01`;to=`${ym}-${String(new Date(+y,+m,0).getDate()).padStart(2,'0')}`;
-  }else if(activePeriod==='custom'){from=document.getElementById('cfrom').value;to=document.getElementById('cto').value;}
-  else{from='2000-01-01';to='2099-12-31';}
+  const today=now.toISOString().slice(0,10);
+  if(activePeriod==='today'){
+    from=to=today;
+  } else if(activePeriod==='week'){
+    // Pazartesi başlangıç — Pazar=0 özel durum
+    const day=now.getDay(); // 0=Pazar,1=Pzt,...,6=Cmt
+    const diffToMon=day===0?-6:1-day; // Pazar ise 6 gün geri, diğerleri Pazartesi'ye
+    const mon=new Date(now);
+    mon.setDate(now.getDate()+diffToMon);
+    from=mon.toISOString().slice(0,10);
+    to=today;
+  } else if(activePeriod==='month'){
+    from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    to=today;
+  } else if(activePeriod.startsWith('pm_')){
+    const ym=activePeriod.replace('pm_','');
+    const[y,m]=ym.split('-');
+    from=`${ym}-01`;
+    to=`${ym}-${String(new Date(+y,+m,0).getDate()).padStart(2,'0')}`;
+  } else if(activePeriod==='custom'){
+    from=document.getElementById('cfrom').value;
+    to=document.getElementById('cto').value;
+  } else {
+    from='2000-01-01';to='2099-12-31';
+  }
 
   filtered=allRecords.filter(r=>r.date>=from&&r.date<=to
     &&(activeProj==='all'||r.proj===activeProj)
