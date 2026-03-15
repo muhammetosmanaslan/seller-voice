@@ -1,9 +1,27 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║           SELLER VOICE — PERFORMANS PANELİ                  ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  Geliştirici  : Muhammet Osman Aslan                        ║
+  ║  Kuruluş      : BCC İletişim                                ║
+  ║  Versiyon     : 1.0                                         ║
+  ║  Tarih        : 2025-2026                                   ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  © 2025-2026 Muhammet Osman Aslan — BCC İletişim            ║
+  ║  Bu yazılım ve kaynak kodu, geliştirici tarafından           ║
+  ║  oluşturulmuş olup izinsiz kopyalanması, dağıtılması        ║
+  ║  veya ticari amaçla kullanılması yasaktır.                  ║
+  ║                                                              ║
+  ║  Tüm hakları saklıdır. All rights reserved.                 ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Seller Voice — Performans Paneli</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232d7ef7'/><text x='16' y='23' font-family='Inter,sans-serif' font-size='20' font-weight='700' fill='white' text-anchor='middle'>S</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -39,8 +57,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .btn-load{width:100%;background:var(--accent);color:white;font-weight:700;font-size:.88rem;border:none;border-radius:9px;padding:13px;cursor:pointer;transition:all .15s;margin-top:8px;}
 .btn-load:hover{background:#4a8fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,126,247,.3);}
 .btn-load:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.setup-demo{text-align:center;margin-top:12px;font-size:.72rem;color:var(--muted2);}
-.setup-demo a{color:var(--accent);cursor:pointer;}
 
 /* Çoklu Sheets */
 .sheets-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
@@ -269,11 +285,11 @@ footer span{font-size:.66rem;color:var(--muted);}
   </div>
   <div id="testResult" style="font-size:.72rem;margin-top:10px;min-height:18px;"></div>
 
-  <div class="setup-demo">ya da <a onclick="loadDemo()">demo verisiyle dene →</a></div>
 
-  <!-- İmza — minimal, göz önünde değil -->
-  <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
-   <span style="font-size:.6rem;color:var(--muted);letter-spacing:.12em;opacity:.5;user-select:none;">M · O · A</span>
+  <!-- İmza -->
+  <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+   <span style="font-size:.6rem;color:var(--muted);letter-spacing:.18em;opacity:.4;user-select:none;font-weight:600;">M.O.A</span>
+   <span style="font-size:.6rem;color:var(--muted);letter-spacing:.06em;opacity:.4;user-select:none;">© 2025-2026 BCC İletişim</span>
   </div>
  </div>
 </div>
@@ -356,7 +372,7 @@ footer span{font-size:.66rem;color:var(--muted);}
  <div class="tab" onclick="switchTab('temsilciler')">Temsilciler</div>
  <div class="tab" onclick="switchTab('dispo')">Dispo</div>
  <div class="tab" onclick="switchTab('capraz')">⚡ Çapraz Analiz</div>
- <div class="tab" onclick="switchTab('haksiz')">⚖ Haksız 1'ler</div>
+ <div class="tab" onclick="switchTab('haksiz')">⚖ İtiraz Yönetimi</div>
  <div class="tab" onclick="switchTab('kayitlar')">Kayıtlar</div>
 </div>
 
@@ -423,9 +439,11 @@ footer span{font-size:.66rem;color:var(--muted);}
  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
   <div>
    <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">Temsilci × Dispo <span style="color:var(--red)">Başarısızlık</span> Matrisi</div>
-   <div style="font-size:.72rem;color:var(--muted2)">Kırmızı hücre = sorun bölgesi. Hücrenin üzerine gelin detay görün.</div>
+   <div style="font-size:.72rem;color:var(--muted2)">Temsilci kartına tıklayın — detay paneli açılır.</div>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+   <input id="cxSearch" type="text" placeholder="Temsilci ara..." oninput="renderCross()"
+    style="background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;padding:5px 10px;border-radius:6px;outline:none;width:160px;">
    <button class="cx-btn active" onclick="setCX('bad12',this)">1–2 Puan</button>
    <button class="cx-btn" onclick="setCX('avg',this)">Ort. Puan</button>
    <button class="cx-btn" onclick="setCX('total',this)">Toplam</button>
@@ -439,6 +457,25 @@ footer span{font-size:.66rem;color:var(--muted);}
   <div class="tbl-wrap" style="margin-top:0"><table><thead><tr><th>Sıra</th><th>Temsilci</th><th>Dispo</th><th style="color:var(--red)">1</th><th style="color:var(--gold)">2</th><th>Toplam</th><th>Ort.</th><th>Risk</th></tr></thead><tbody id="worstPairs"></tbody></table></div>
  </div>
 </section>
+
+<!-- ÇAPRAZ DETAY MODAL -->
+<div id="cxModal" style="display:none;position:fixed;inset:0;background:rgba(6,8,17,.92);z-index:600;overflow-y:auto;backdrop-filter:blur(3px);">
+ <div style="max-width:760px;margin:32px auto;padding:0 20px 60px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+   <div>
+    <div style="font-weight:800;font-size:1.3rem;letter-spacing:-.02em;" id="cxModalName">—</div>
+    <div style="font-size:.74rem;color:var(--muted2);margin-top:3px;" id="cxModalMeta">—</div>
+   </div>
+   <button onclick="closeCxModal()" style="background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-size:1.2rem;width:36px;height:36px;border-radius:8px;cursor:pointer;transition:all .15s;" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--muted2)';this.style.borderColor='var(--border2)'">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;" id="cxModalStats"></div>
+  <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">Dispo Bazlı Detay</div>
+  <div class="tbl-wrap" style="margin-top:0;">
+   <table><thead><tr><th>Dispo</th><th style="color:var(--red)">1 Puan</th><th style="color:var(--gold)">2 Puan</th><th>Toplam</th><th>Ort.</th><th>Risk</th></tr></thead>
+   <tbody id="cxModalTable"></tbody></table>
+  </div>
+ </div>
+</div>
 
 <!-- HAKSIZ -->
 <section id="haksiz" class="section">
@@ -511,7 +548,7 @@ footer span{font-size:.66rem;color:var(--muted);}
  </div>
  <div class="tbl-wrap">
   <div class="tbl-head"><span class="tbl-head-title" id="allCount">0 kayıt</span></div>
-  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Team Leader</th><th>Proje</th></tr></thead>
+  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Team Leader</th><th>Proje</th><th>CALL/CHAT ID</th></tr></thead>
   <tbody id="allTable"></tbody></table>
  </div>
 </section>
@@ -520,7 +557,10 @@ footer span{font-size:.66rem;color:var(--muted);}
 
 <footer>
  <span>SELLER VOICE — Anket Performans Paneli | Veriler Google Sheets'ten canlı çekilmektedir.</span>
- <span id="footerInfo">—</span>
+ <span style="display:flex;align-items:center;gap:16px;">
+  <span id="footerInfo">—</span>
+  <span style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;opacity:.6;border-left:1px solid var(--border);padding-left:14px;">© 2025-2026 Muhammet Osman Aslan — BCC İletişim</span>
+ </span>
 </footer>
 <div class="toast" id="toast"></div>
 
@@ -1017,21 +1057,41 @@ function renderDispoGrid(){
 function setCX(m,el){cxMode=m;document.querySelectorAll('.cx-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderCross();}
 function buildCM(data){const m={};data.forEach(r=>{if(!m[r.rep])m[r.rep]={};if(!m[r.rep][r.dispo])m[r.rep][r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,sum:0,total:0};const c=m[r.rep][r.dispo];c[`s${r.score}`]++;c.sum+=r.score;c.total++;});return m;}
 function renderCross(){
-  const data=filtered;if(!data.length){document.getElementById('rdCards').innerHTML='';document.getElementById('hmWrap').innerHTML='';document.getElementById('worstPairs').innerHTML='';return;}
-  const cross=buildCM(data);const reps=Object.keys(cross).sort();const dispos=[...new Set(data.map(r=>r.dispo))].sort();
-  // rd cards
-  const repsSorted=reps.map(rep=>{let bad=0,total=0;dispos.forEach(d=>{const c=cross[rep][d];if(c){bad+=c.s1+c.s2;total+=c.total;}});return{rep,bad,total,avg:total?(Object.values(cross[rep]).reduce((a,c)=>a+c.sum,0)/total):0};}).sort((a,b)=>b.bad-a.bad);
-  const cards=repsSorted.map(({rep,bad,avg})=>{
-    const de=Object.entries(cross[rep]).map(([d,c])=>({d,bad12:c.s1+c.s2,avg:c.total?c.sum/c.total:0,s1:c.s1,s2:c.s2,total:c.total})).filter(e=>e.total>0).sort((a,b)=>b.bad12-a.bad12);
-    const mx=Math.max(...de.map(e=>e.bad12),1);
-    const ac=avg>=4.85?'var(--green)':avg>=4.70?'var(--gold)':'var(--red)';
-    const rows=de.slice(0,5).map(e=>{const bw=Math.round(e.bad12/mx*100);const bc=e.bad12>=3?'#e83b3b':e.bad12>=1?'#f0b429':'#3a4a6b';return`<div class="rd-row"><div class="rd-dname">${e.d}</div><div class="rd-bw"><div class="rd-bf" style="width:${bw}%;background:${bc}"></div></div><div style="display:flex;gap:4px">${e.s1?`<span class="rd-mb" style="background:rgba(232,59,59,.15);color:var(--red)">1×${e.s1}</span>`:''} ${e.s2?`<span class="rd-mb" style="background:rgba(240,180,41,.15);color:var(--gold)">2×${e.s2}</span>`:''} ${!e.s1&&!e.s2?`<span class="rd-mb" style="background:rgba(34,201,122,.08);color:#22c97a">✓</span>`:''}</div><div style="font-size:.63rem;color:var(--muted2);width:24px;text-align:right">${e.total}</div></div>`;}).join('');
-    const bt=bad>=5?'var(--red)':bad>=2?'var(--gold)':'var(--border)';
-    return`<div class="rd-card" style="border-top:2px solid ${bt}"><div class="rd-head"><div class="rd-name">${rep}</div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:.63rem;color:var(--red)">${bad>0?`⚠ ${bad}`:''}</span><div style="font-weight:700;font-size:.82rem;color:${ac}">${avg.toFixed(2)}</div></div></div>${rows||'<div style="padding:11px 14px;color:var(--muted);font-size:.7rem">Düşük puan yok ✓</div>'}</div>`;
+  const q=(document.getElementById('cxSearch')||{}).value?.toLowerCase().trim()||'';
+  const data=filtered;
+  if(!data.length){document.getElementById('rdCards').innerHTML='';document.getElementById('hmWrap').innerHTML='';document.getElementById('worstPairs').innerHTML='';return;}
+  const cross=buildCM(data);
+  const allReps=Object.keys(cross).sort();
+  const reps=q?allReps.filter(r=>r.toLowerCase().includes(q)):allReps;
+  const dispos=[...new Set(data.map(r=>r.dispo))].sort();
+
+  // ── Mini kart grid (sadece isim + özet) ──
+  const repsSorted=reps.map(rep=>{
+    let bad=0,total=0,sum=0;
+    Object.values(cross[rep]).forEach(c=>{bad+=c.s1+c.s2;total+=c.total;sum+=c.sum;});
+    return{rep,bad,total,avg:total?sum/total:0};
+  }).sort((a,b)=>b.bad-a.bad);
+
+  const miniCards=repsSorted.map(({rep,bad,avg})=>{
+    const bt=bad>=5?'#e83b3b':bad>=2?'#f0b429':'var(--border2)';
+    const ac=avg>=4.85?'#22c97a':avg>=4.70?'#f0b429':'#e83b3b';
+    const initials=rep.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return`<div onclick="openCxModal('${rep.replace(/'/g,"\'")}')" style="background:var(--s1);border:1px solid var(--border);border-top:2px solid ${bt};border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;" onmouseover="this.style.borderColor='${bt}';this.style.background='var(--s2)'" onmouseout="this.style.borderColor='var(--border)';this.style.borderTopColor='${bt}';this.style.background='var(--s1)'">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.72rem;color:white;flex-shrink:0;">${initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rep}</div>
+        <div style="font-size:.67rem;color:var(--muted2);margin-top:2px;">${bad>0?`<span style="color:#e83b3b">⚠ ${bad} düşük</span>`:'<span style="color:#22c97a">✓ Temiz</span>'} · Ort: <span style="color:${ac};font-weight:600">${avg.toFixed(2)}</span></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--muted);flex-shrink:0;">›</div>
+    </div>`;
   }).join('');
-  document.getElementById('rdCards').innerHTML=`<div class="rd-cards">${cards}</div>`;
-  // heatmap
-  const topReps=[...reps].sort((a,b)=>Object.values(cross[b]).reduce((s,c)=>s+c.total,0)-Object.values(cross[a]).reduce((s,c)=>s+c.total,0)).slice(0,15);
+
+  document.getElementById('rdCards').innerHTML=`
+    <div style="font-size:.7rem;color:var(--muted2);margin-bottom:10px;">${repsSorted.length} temsilci ${q?'(filtrelendi)':''} — Detay için tıklayın</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">${miniCards||'<div style="color:var(--muted);padding:16px">Temsilci bulunamadı</div>'}</div>`;
+
+  // ── Heatmap ──
+  const topReps=[...allReps].sort((a,b)=>Object.values(cross[b]).reduce((s,c)=>s+c.total,0)-Object.values(cross[a]).reduce((s,c)=>s+c.total,0)).slice(0,15);
   const dt={};data.forEach(r=>dt[r.dispo]=(dt[r.dispo]||0)+1);
   const topDispos=Object.keys(dt).sort((a,b)=>dt[b]-dt[a]).slice(0,10);
   let gmax=1;topReps.forEach(rep=>topDispos.forEach(d=>{const c=cross[rep]?.[d];if(c){const v=cxMode==='bad12'?c.s1+c.s2:cxMode==='avg'?c.sum/c.total:c.total;if(v>gmax)gmax=v;}}));
@@ -1047,18 +1107,57 @@ function renderCross(){
       return`<td title="${rep} / ${d}"><div class="hm-cell" style="background:${bg};color:${tc}">${disp}</div></td>`;
     }).join('');
     const rb=topDispos.reduce((s,d)=>s+(cross[rep]?.[d]?.s1||0)+(cross[rep]?.[d]?.s2||0),0);
-    return`<tr><td class="hm-rep">${rep}${rb>0?`<span style="font-size:.58rem;color:var(--red);margin-left:5px">⚠${rb}</span>`:''}</td>${cells}</tr>`;
+    return`<tr><td class="hm-rep" style="cursor:pointer" onclick="openCxModal('${rep.replace(/'/g,"\'")}')">${rep}${rb>0?`<span style="font-size:.58rem;color:var(--red);margin-left:5px">⚠${rb}</span>`:''}</td>${cells}</tr>`;
   }).join('');
-  document.getElementById('hmWrap').innerHTML=`<table class="hm-table"><thead><tr><th style="text-align:left">Temsilci \\ Dispo</th>${hdr}</tr></thead><tbody>${body}</tbody></table>`;
-  // worst pairs
-  const pairs=[];reps.forEach(rep=>{Object.entries(cross[rep]).forEach(([d,c])=>{if(c.total===0)return;pairs.push({rep,dispo:d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.sum/c.total,total:c.total});});});
+  document.getElementById('hmWrap').innerHTML=`<table class="hm-table"><thead><tr><th style="text-align:left">Temsilci \ Dispo</th>${hdr}</tr></thead><tbody>${body}</tbody></table>`;
+
+  // ── Worst pairs ──
+  const pairs=[];allReps.forEach(rep=>{Object.entries(cross[rep]).forEach(([d,c])=>{if(c.total===0)return;pairs.push({rep,dispo:d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.sum/c.total,total:c.total});});});
   pairs.sort((a,b)=>b.bad12-a.bad12);
   document.getElementById('worstPairs').innerHTML=pairs.slice(0,10).map((p,i)=>{
     const risk=p.bad12>=5?`<span class="risk-hi">🔴 Yüksek</span>`:p.bad12>=2?`<span class="risk-md">🟡 Orta</span>`:`<span class="risk-lo">🟢 Düşük</span>`;
     const ac=p.avg>=4.85?'var(--green)':p.avg>=4.70?'var(--gold)':'var(--red)';
-    return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:500">${p.rep}</td><td style="color:var(--muted2)">${p.dispo}</td><td style="color:var(--red);font-weight:700">${p.s1}</td><td style="color:var(--gold);font-weight:700">${p.s2}</td><td style="font-weight:700;color:var(--red)">${p.bad12}</td><td style="color:${ac};font-weight:600">${p.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
+    return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:500;cursor:pointer;color:var(--accent)" onclick="openCxModal('${p.rep.replace(/'/g,"\'")}')">${p.rep}</td><td style="color:var(--muted2)">${p.dispo}</td><td style="color:var(--red);font-weight:700">${p.s1}</td><td style="color:var(--gold);font-weight:700">${p.s2}</td><td style="font-weight:700;color:var(--red)">${p.bad12}</td><td style="color:${ac};font-weight:600">${p.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
   }).join('');
 }
+
+function openCxModal(rep){
+  const cross=buildCM(filtered);
+  const repData=cross[rep];
+  if(!repData){return;}
+  let bad=0,total=0,sum=0;
+  Object.values(repData).forEach(c=>{bad+=c.s1+c.s2;total+=c.total;sum+=c.sum;});
+  const avg=total?sum/total:0;
+  const ac=avg>=4.85?'#22c97a':avg>=4.70?'#f0b429':'#e83b3b';
+
+  document.getElementById('cxModalName').textContent=rep;
+  document.getElementById('cxModalMeta').textContent=`${total} anket · ${Object.keys(repData).length} farklı dispo`;
+  document.getElementById('cxModalStats').innerHTML=`
+    <div class="sc c-blue"><div class="sc-tag">Toplam Anket</div><div class="sc-val">${total}</div></div>
+    <div class="sc c-red"><div class="sc-tag">Düşük Puan (1–2)</div><div class="sc-val" style="color:${bad>0?'var(--red)':'var(--green)'}">${bad}</div></div>
+    <div class="sc c-gold"><div class="sc-tag">Ort. Puan</div><div class="sc-val" style="color:${ac}">${avg.toFixed(2)}</div></div>`;
+
+  const rows=Object.entries(repData)
+    .map(([d,c])=>({d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.total?c.sum/c.total:0,total:c.total}))
+    .filter(e=>e.total>0).sort((a,b)=>b.bad12-a.bad12);
+  document.getElementById('cxModalTable').innerHTML=rows.map(e=>{
+    const risk=e.bad12>=5?`<span class="risk-hi">🔴 Yüksek</span>`:e.bad12>=2?`<span class="risk-md">🟡 Orta</span>`:e.bad12>=1?`<span class="risk-lo" style="color:var(--gold)">🟡 Düşük</span>`:`<span class="risk-lo">🟢 —</span>`;
+    const ac2=e.avg>=4.85?'var(--green)':e.avg>=4.70?'var(--gold)':'var(--red)';
+    return`<tr><td style="font-size:.75rem">${e.d}</td><td style="color:var(--red);font-weight:700;text-align:center">${e.s1||'—'}</td><td style="color:var(--gold);font-weight:700;text-align:center">${e.s2||'—'}</td><td style="text-align:center">${e.total}</td><td style="color:${ac2};font-weight:600;text-align:center">${e.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
+  }).join('');
+
+  document.getElementById('cxModal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeCxModal(){
+  document.getElementById('cxModal').style.display='none';
+  document.body.style.overflow='';
+}
+// ESC ile kapat
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCxModal();});
+
+
 
 // ── KAYITLAR ──
 function renderAll2(){
@@ -1077,14 +1176,15 @@ function renderAll2(){
   });
   document.getElementById('allCount').textContent=rows.length+' kayıt';
   const tb=document.getElementById('allTable');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Kayıt bulunamadı</td></tr>';return;}
+  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="padding:28px;color:var(--muted);text-align:center">Kayıt bulunamadı</td></tr>';return;}
   tb.innerHTML=rows.map((r,i)=>`<tr>
     <td style="color:var(--muted)">${i+1}</td>
     <td>${r.rep}</td><td>${r.date}</td>
     <td style="color:var(--muted2);font-size:.73rem">${r.dispo}</td>
     <td><span class="badge b${r.score}">${scoreStars(r.score)}</span></td>
     <td style="font-size:.72rem;color:var(--accent)">${r.teamLeader||'—'}</td>
-    <td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td></tr>`).join('');
+    <td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td>
+    <td style="font-family:monospace;font-size:.68rem;color:var(--muted2)">${r.callId||'—'}</td></tr>`).join('');
 }
 function clearF(){['fRep','fDispo','fScore','fTL','fCallId'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderAll2();}
 function exportCSV(){
@@ -1527,37 +1627,7 @@ function renderHaksiz(){
 }
 
 // ══ DEMO ══
-function loadDemo(){
-  const reps=['yukselsimay.atas@bcciletisim.com.tr','sinaberrin.kilinc@bcciletisim.com.tr','gorkem.taser@bcciletisim.com.tr','hanificevahir.erkan@bcciletisim.com.tr','dilay.aytas@bcciletisim.com.tr','izel.satilmisgil@bcciletisim.com.tr','sati.ulusinan@bcciletisim.com.tr','elif.gedik@bcciletisim.com.tr','kubra.gocuk@bcciletisim.com.tr','tolga.atar@bcciletisim.com.tr','omer.celik@bcciletisim.com.tr'];
-  const teamLeaders={'yukselsimay.atas':'Osman Aslan','sinaberrin.kilinc':'Osman Aslan','gorkem.taser':'Osman Aslan','hanificevahir.erkan':'Osman Aslan','dilay.aytas':'Mehmet Yılmaz','izel.satilmisgil':'Mehmet Yılmaz','sati.ulusinan':'Mehmet Yılmaz','elif.gedik':'Ayşe Demir','kubra.gocuk':'Ayşe Demir','tolga.atar':'Ayşe Demir','omer.celik':'Ayşe Demir'};
-  const dispos=['Magaza 10+ dk bekletiyor, RA yapildi','Yeni ürün ekleme','Musteriye ulasamama, ulasildi','Satici siparisi hazirlayamiyor, iptal edildi','Siparis karisikligi, görsel istendi','Gorusme / Baglanti Kesildi','Siparisler karisti','Magaza kapali, siparis iptal edildi','Uzak mesafe, RA yapildi','Uygulama sorunu yasama','Kullanici ödeme yapamiyor','Pin hatasi var, lokasyon guncellendi','Bilgi talebi, uygulamaya yonlendirildi','Model degisikligi talebi'];
-  const projs=['TGO BCC Kurye Voice Hatay','TGO BCC Seller Voice'];
-  const today=new Date();const recs=[];
-  for(let d=0;d<60;d++){
-    const dd=new Date(today);dd.setDate(today.getDate()-d);
-    const dateStr=dd.toISOString().slice(0,10);
-    const cnt=8+Math.floor(Math.random()*12);
-    for(let i=0;i<cnt;i++){
-      const rawRep=reps[Math.floor(Math.random()*reps.length)];
-      const repKey=rawRep.split('@')[0];
-      const repName=repKey.replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      const tl=teamLeaders[repKey]||'Osman Aslan';
-      const dispo=dispos[Math.floor(Math.random()*dispos.length)];
-      const proj=projs[Math.floor(Math.random()*projs.length)];
-      const w=[6,10,18,36,30];let r=Math.random()*100,cum=0,score=5;
-      for(let s=0;s<5;s++){cum+=w[s];if(r<cum){score=s+1;break;}}
-      recs.push({id:recs.length,rep:repName,date:dateStr,dispo,score,
-        callId:`hq.prod${Math.floor(Math.random()*3)+1}.${1773000000000+recs.length}`,
-        teamLeader:tl,callTime:Math.floor(Math.random()*300)+30,proj,note:''});
-    }
-  }
-  allRecords=recs;
-  document.getElementById('setupOverlay').style.display='none';
-  document.getElementById('syncInfo').textContent='Demo — gerçek veri yapısı';
-  buildProjButtons();buildTLButtons();buildPastMonths();
-  setPeriod('month');
-  toast(`Demo: ${recs.length} kayıt, 60 gün, 3 TL, 2 proje`,'ok');
-}
+
 
 // ══ INIT ══
 window.addEventListener('DOMContentLoaded',()=>{
