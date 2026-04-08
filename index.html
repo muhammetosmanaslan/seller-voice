@@ -310,7 +310,7 @@ footer span{font-size:.66rem;color:var(--muted);}
   <div class="am-tabs">
    <button class="am-tab active" onclick="amTab('ozet',this)">📊 Özet</button>
    <button class="am-tab" onclick="amTab('gelisim',this)">📈 Gelişim Raporu</button>
-   <button class="am-tab" onclick="amTab('kayitlar',this)">📋 Kayıtlar</button>
+   <button class="am-tab" onclick="amTab('motivasyon',this)">🎯 Motivasyon</button>
   </div>
   <!-- ÖZET -->
   <div id="amSec_ozet" class="am-sec active">
@@ -318,21 +318,16 @@ footer span{font-size:.66rem;color:var(--muted);}
     <div class="cc"><div class="cc-title">Günlük Puan Trendi</div><canvas id="amTrend" height="180"></canvas></div>
     <div class="cc"><div class="cc-title">Puan Dağılımı</div><canvas id="amDist" height="180"></canvas></div>
    </div>
-   <div class="cc" style="margin-bottom:14px">
-    <div class="cc-title">Dispo Bazlı 1–2 Puan Sayısı</div>
-    <canvas id="amDispo" height="130"></canvas>
-   </div>
+   <!-- Dispo Detractor Analizi — yeni metin/bar panel -->
+   <div class="cc" style="margin-bottom:14px" id="amDispoPanelWrap"></div>
   </div>
   <!-- GELİŞİM RAPORU -->
   <div id="amSec_gelisim" class="am-sec" style="display:none">
    <div id="amGelisimContent"></div>
   </div>
-  <!-- KAYITLAR -->
-  <div id="amSec_kayitlar" class="am-sec" style="display:none">
-   <div class="tbl-wrap" style="margin-top:0">
-    <table><thead><tr><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Proje</th></tr></thead>
-    <tbody id="amRecords"></tbody></table>
-   </div>
+  <!-- MOTİVASYON -->
+  <div id="amSec_motivasyon" class="am-sec" style="display:none">
+   <div id="amMotivasyonContent"></div>
   </div>
  </div>
 </div>
@@ -371,7 +366,6 @@ footer span{font-size:.66rem;color:var(--muted);}
  <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
  <div class="tab" onclick="switchTab('temsilciler')">Temsilciler</div>
  <div class="tab" onclick="switchTab('dispo')">Dispo</div>
- <div class="tab" onclick="switchTab('capraz')">⚡ Çapraz Analiz</div>
  <div class="tab" onclick="switchTab('haksiz')">⚖ İtiraz Yönetimi</div>
  <div class="tab" onclick="switchTab('kayitlar')">Kayıtlar</div>
 </div>
@@ -403,7 +397,7 @@ footer span{font-size:.66rem;color:var(--muted);}
     <span>⚠️ Dispo Bazlı Kritik Anketler — 1 ve 2 Puan</span>
     <span id="dispoSubtitle" style="font-size:.68rem;color:var(--muted2);font-weight:400">En fazla düşük puan alan 10 dispo türü</span>
   </div>
-  <canvas id="cDispo" height="155"></canvas>
+  <canvas id="cDispo" height="210"></canvas>
 </div>
 </section>
 
@@ -430,73 +424,84 @@ footer span{font-size:.66rem;color:var(--muted);}
 
 <!-- DİSPO -->
 <section id="dispo" class="section">
+ <div class="frow" style="margin-bottom:14px">
+  <div class="fg"><label>Tarih Başlangıç</label><input type="date" id="dispoFrom" onchange="renderDispoGrid()"></div>
+  <div class="fg"><label>Tarih Bitiş</label><input type="date" id="dispoTo" onchange="renderDispoGrid()"></div>
+  <div class="fg"><label>Temsilci</label><input type="text" id="dispoRep" placeholder="filtrele..." oninput="renderDispoGrid()"></div>
+  <div class="fg"><label>Dispo Adı</label><input type="text" id="dispoName" placeholder="filtrele..." oninput="renderDispoGrid()"></div>
+  <div class="fg"><label>Sırala</label>
+   <select id="dispoSort" onchange="renderDispoGrid()">
+    <option value="bad_desc">1–2 Puan ↓ (Kritik önce)</option>
+    <option value="total_desc">Toplam ↓</option>
+    <option value="name_asc">İsim A–Z</option>
+   </select>
+  </div>
+  <button class="sbtn" onclick="clearDispoF()">Temizle</button>
+ </div>
  <p style="font-size:.74rem;color:var(--muted2);margin-bottom:4px">Dispo türlerine göre puan dağılımı — 1–2 puan yoğunluğuna göre sıralı.</p>
  <div class="dispo-grid" id="dispoGrid"></div>
 </section>
 
-<!-- ÇAPRAZ -->
-<section id="capraz" class="section">
- <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-  <div>
-   <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">Temsilci × Dispo <span style="color:var(--red)">Başarısızlık</span> Matrisi</div>
-   <div style="font-size:.72rem;color:var(--muted2)">Temsilci kartına tıklayın — detay paneli açılır.</div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-   <input id="cxSearch" type="text" placeholder="Temsilci ara..." oninput="renderCross()"
-    style="background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;padding:5px 10px;border-radius:6px;outline:none;width:160px;">
-   <button class="cx-btn active" onclick="setCX('bad12',this)">1–2 Puan</button>
-   <button class="cx-btn" onclick="setCX('avg',this)">Ort. Puan</button>
-   <button class="cx-btn" onclick="setCX('total',this)">Toplam</button>
-  </div>
- </div>
- <div id="rdCards" style="margin-bottom:24px;"></div>
- <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">Isı Haritası</div>
- <div style="overflow-x:auto;" id="hmWrap"></div>
- <div style="margin-top:22px;">
-  <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">En Kritik 10 Kombinasyon</div>
-  <div class="tbl-wrap" style="margin-top:0"><table><thead><tr><th>Sıra</th><th>Temsilci</th><th>Dispo</th><th style="color:var(--red)">1</th><th style="color:var(--gold)">2</th><th>Toplam</th><th>Ort.</th><th>Risk</th></tr></thead><tbody id="worstPairs"></tbody></table></div>
- </div>
-</section>
 
-<!-- ÇAPRAZ DETAY MODAL -->
-<div id="cxModal" style="display:none;position:fixed;inset:0;background:rgba(6,8,17,.92);z-index:600;overflow-y:auto;backdrop-filter:blur(3px);">
- <div style="max-width:760px;margin:32px auto;padding:0 20px 60px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-   <div>
-    <div style="font-weight:800;font-size:1.3rem;letter-spacing:-.02em;" id="cxModalName">—</div>
-    <div style="font-size:.74rem;color:var(--muted2);margin-top:3px;" id="cxModalMeta">—</div>
-   </div>
-   <button onclick="closeCxModal()" style="background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-size:1.2rem;width:36px;height:36px;border-radius:8px;cursor:pointer;transition:all .15s;" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--muted2)';this.style.borderColor='var(--border2)'">✕</button>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;" id="cxModalStats"></div>
-  <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px;">Dispo Bazlı Detay</div>
-  <div class="tbl-wrap" style="margin-top:0;">
-   <table><thead><tr><th>Dispo</th><th style="color:var(--red)">1 Puan</th><th style="color:var(--gold)">2 Puan</th><th>Toplam</th><th>Ort.</th><th>Risk</th></tr></thead>
-   <tbody id="cxModalTable"></tbody></table>
-  </div>
- </div>
-</div>
 
 <!-- HAKSIZ -->
 <section id="haksiz" class="section">
+ <!-- Özet kartlar -->
  <div class="hc-grid" id="hcGrid"></div>
+
+ <!-- Dönem filtresi + detractor listesi -->
  <div class="cc" style="margin-bottom:18px">
-  <div class="cc-title">Haksız 1 Puanlı Kontak Ekle</div>
-  <p style="font-size:.73rem;color:var(--muted2);margin-bottom:14px;line-height:1.6">CALL/CHAT ID girin — sistem kaydı bulur, ortalamayı çıkarılmış haliyle karşılaştırır.</p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-   <div class="fg"><label>CALL/CHAT ID</label><input type="text" id="hCallId" placeholder="hq.prod1.177..." style="min-width:240px" oninput="hLookup()"></div>
-   <div class="fg"><label>Temsilci (otomatik)</label><input type="text" id="hRep" readonly style="min-width:160px;background:var(--s3);color:var(--muted2)"></div>
-   <div class="fg"><label>Neden Haksız?</label><input type="text" id="hReason" placeholder="Sistem hatası, yanlış kişi..." style="min-width:180px"></div>
-   <button class="sbtn pri" onclick="addHaksiz()">+ Ekle</button>
+  <div class="cc-title" style="margin-bottom:14px">Haksız Anket Seçimi — Detractor Kayıtları (1–2 Puan)</div>
+  <div class="frow" style="margin-bottom:14px;background:transparent;border:none;padding:0">
+   <div class="fg">
+    <label>Dönem</label>
+    <select id="hPeriod" onchange="renderHaksizList()">
+     <option value="daily">Günlük (Bugün)</option>
+     <option value="monthly" selected>Aylık (Bu Ay)</option>
+    </select>
+   </div>
+   <div class="fg">
+    <label>Temsilci Filtresi</label>
+    <input type="text" id="hRepFilter" placeholder="filtrele..." oninput="renderHaksizList()">
+   </div>
+   <div class="fg">
+    <label>Dispo Filtresi</label>
+    <input type="text" id="hDispoFilter" placeholder="filtrele..." oninput="renderHaksizList()">
+   </div>
   </div>
-  <div id="hHint" style="font-size:.67rem;margin-top:7px;"></div>
+  <!-- Toplu ekleme toolbar -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+   <span id="hSelCount" style="font-size:.72rem;color:var(--muted2)">0 seçili</span>
+   <div class="fg" style="margin-bottom:0">
+    <input type="text" id="hBulkReason" placeholder="Toplu neden (isteğe bağlı)..." style="min-width:220px">
+   </div>
+   <button class="sbtn pri" onclick="addSelectedHaksiz()">+ Seçilileri Haksız Listesine Ekle</button>
+   <button class="sbtn" onclick="toggleSelectAll()" id="hSelectAllBtn">Tümünü Seç</button>
+  </div>
+  <!-- Detractor listesi -->
+  <div class="tbl-wrap" style="margin-top:0;max-height:420px;overflow-y:auto">
+   <table>
+    <thead><tr>
+     <th style="width:36px"><input type="checkbox" id="hMasterCb" onchange="masterCheck(this)" style="accent-color:var(--accent)"></th>
+     <th>Tarih</th><th>Temsilci</th><th>Dispo</th><th>Puan</th><th>Proje</th><th>Durum</th>
+    </tr></thead>
+    <tbody id="hDetractorTable"></tbody>
+   </table>
+  </div>
  </div>
- <div class="tbl-wrap">
-  <div class="tbl-head"><span class="tbl-head-title">Haksız 1 Listesi</span><button class="sbtn sm" onclick="clearHaksiz()">Tümünü Temizle</button></div>
-  <table><thead><tr><th>#</th><th>CALL/CHAT ID</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Neden</th><th></th></tr></thead>
+
+ <!-- Haksız listesi -->
+ <div class="tbl-wrap" style="margin-bottom:20px">
+  <div class="tbl-head">
+   <span class="tbl-head-title">Haksız Anket Listesi</span>
+   <button class="sbtn sm" onclick="clearHaksiz()">Tümünü Temizle</button>
+  </div>
+  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Neden</th><th></th></tr></thead>
   <tbody id="hTable"></tbody></table>
  </div>
- <div style="margin-top:20px;">
+
+ <!-- Temsilci bazlı etki -->
+ <div>
   <div style="font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:10px">Temsilci Bazlı Etki</div>
   <div class="tbl-wrap" style="margin-top:0"><table><thead><tr><th>Temsilci</th><th>Mevcut Ort.</th><th>Düzeltilmiş Ort.</th><th>Fark</th><th>Çıkarılan</th></tr></thead><tbody id="hRepTable"></tbody></table></div>
  </div>
@@ -535,7 +540,6 @@ footer span{font-size:.66rem;color:var(--muted);}
 <section id="kayitlar" class="section">
  <div class="frow">
   <div class="fg"><label>Temsilci</label><input type="text" id="fRep" oninput="renderAll2()" placeholder="filtrele..."></div>
-  <div class="fg"><label>CALL/CHAT ID</label><input type="text" id="fCallId" oninput="renderAll2()" placeholder="hq.prod..."></div>
   <div class="fg"><label>Dispo</label><input type="text" id="fDispo" oninput="renderAll2()" placeholder="filtrele..."></div>
   <div class="fg"><label>Puan</label>
    <select id="fScore" onchange="renderAll2()">
@@ -548,7 +552,7 @@ footer span{font-size:.66rem;color:var(--muted);}
  </div>
  <div class="tbl-wrap">
   <div class="tbl-head"><span class="tbl-head-title" id="allCount">0 kayıt</span></div>
-  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Team Leader</th><th>Proje</th><th>CALL/CHAT ID</th></tr></thead>
+  <table><thead><tr><th>#</th><th>Temsilci</th><th>Tarih</th><th>Dispo</th><th>Puan</th><th>Team Leader</th><th>Proje</th></tr></thead>
   <tbody id="allTable"></tbody></table>
  </div>
 </section>
@@ -574,7 +578,13 @@ let activeTL     = 'all';
 let trendMode    = 'avg';
 let cxMode       = 'bad12';
 let charts       = {};
-let haksizList   = JSON.parse(localStorage.getItem('sv_haksiz')||'[]');
+let haksizList   = (()=>{
+  try{
+    const raw=JSON.parse(localStorage.getItem('sv_haksiz')||'[]');
+    // Eski format (callId bazlı) → atla; sadece key bazlı yenileri tut
+    return raw.filter(h=>h.key);
+  }catch(e){return[];}
+})();
 let projects     = [];
 let agentCharts  = {};
 let tlCharts     = {};
@@ -845,7 +855,7 @@ function applyFilters(){
 // ══ TAB ══
 function switchTab(id){
   document.querySelectorAll('.tab').forEach((t,i)=>{
-    const ids=['dashboard','temsilciler','dispo','capraz','haksiz','kayitlar'];
+    const ids=['dashboard','temsilciler','dispo','haksiz','kayitlar'];
     t.classList.toggle('active',ids[i]===id);
   });
   document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));
@@ -854,7 +864,7 @@ function switchTab(id){
 
 // ══ RENDER ALL ══
 function renderEverything(){
-  renderStats();renderPodium();renderCharts();renderRepTable();renderDispoGrid();renderCross();renderAll2();
+  renderStats();renderPodium();renderCharts();renderRepTable();renderDispoGrid();renderAll2();
   if(document.getElementById('haksiz').classList.contains('active'))renderHaksiz();
 }
 
@@ -993,33 +1003,54 @@ function renderDispoChart(){
   const keys=Object.keys(map).filter(k=>map[k].s1+map[k].s2>0)
     .sort((a,b)=>(map[b].s1+map[b].s2)-(map[a].s1+map[a].s2)).slice(0,10);
   if(!keys.length){dc('dispo');return;}
-  // kısa etiket: 35 karakterden uzunsa kes
-  const shortLabel=k=>k.length>38?k.slice(0,36)+'…':k;
+  const shortLabel=k=>k.length>32?k.slice(0,30)+'…':k;
+  const s1data=keys.map(k=>map[k].s1);
+  const s2data=keys.map(k=>map[k].s2);
   dc('dispo');charts.dispo=new Chart(document.getElementById('cDispo').getContext('2d'),{
     type:'bar',
     data:{
       labels:keys.map(shortLabel),
       datasets:[
-        {label:'1 Puan ★',data:keys.map(k=>map[k].s1),backgroundColor:'#e83b3b',borderRadius:5,borderSkipped:false},
-        {label:'2 Puan ★★',data:keys.map(k=>map[k].s2),backgroundColor:'#f0b429',borderRadius:5,borderSkipped:false}
+        {label:'1 Puan ★',data:s1data,backgroundColor:'rgba(232,59,59,.85)',borderRadius:{topLeft:0,topRight:5,bottomLeft:0,bottomRight:5},borderSkipped:false,barThickness:18},
+        {label:'2 Puan ★★',data:s2data,backgroundColor:'rgba(240,180,41,.75)',borderRadius:{topLeft:0,topRight:5,bottomLeft:0,bottomRight:5},borderSkipped:false,barThickness:18}
       ]
     },
     options:{
       indexAxis:'y',
       plugins:{
-        legend:{labels:{color:'#9aa8c0',font:{size:11},padding:16}},
-        tooltip:{callbacks:{
-          label:ctx=>{
-            const k=keys[ctx.dataIndex];
-            return` ${ctx.dataset.label}: ${ctx.parsed.x}  (toplam ${map[k].total} anket)`;
+        legend:{labels:{color:'#9aa8c0',font:{size:12},padding:18,usePointStyle:true,pointStyle:'circle'}},
+        tooltip:{
+          backgroundColor:'rgba(14,20,32,.95)',
+          borderColor:'#1e2a3e',
+          borderWidth:1,
+          padding:12,
+          callbacks:{
+            label:ctx=>{
+              const k=keys[ctx.dataIndex];
+              const total=map[k].s1+map[k].s2;
+              const pct=map[k].total>0?((total/map[k].total)*100).toFixed(0):0;
+              return` ${ctx.dataset.label}: ${ctx.parsed.x}  (toplam ${map[k].total} anket, kritik oran: %${pct})`;
+            }
           }
-        }}
+        },
+        datalabels:{
+          display:false
+        }
       },
       scales:{
-        x:{grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1},stacked:true},
-        y:{grid:{display:false},ticks:{color:'#9aa8c0',font:{size:11}},stacked:true}
+        x:{
+          grid:{color:'rgba(30,42,62,.7)',drawBorder:false},
+          ticks:{color:'#4a5670',font:{size:11},stepSize:1},
+          stacked:true
+        },
+        y:{
+          grid:{display:false},
+          ticks:{color:'#b0bcd4',font:{size:11.5},padding:6},
+          stacked:true
+        }
       },
-      responsive:true
+      responsive:true,
+      layout:{padding:{right:8}}
     }
   });
 }
@@ -1059,121 +1090,60 @@ function renderRepTable(){
 }
 
 // ── DISPO ──
+function clearDispoF(){
+  ['dispoFrom','dispoTo','dispoRep','dispoName'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const s=document.getElementById('dispoSort');if(s)s.value='bad_desc';
+  renderDispoGrid();
+}
 function renderDispoGrid(){
-  const map={};filtered.forEach(r=>{if(!map[r.dispo])map[r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,t:0};map[r.dispo][`s${r.score}`]++;map[r.dispo].t++;});
-  const dispos=Object.entries(map).sort((a,b)=>(b[1].s1+b[1].s2)-(a[1].s1+a[1].s2));
+  const fromV=(document.getElementById('dispoFrom')||{}).value||'';
+  const toV=(document.getElementById('dispoTo')||{}).value||'';
+  const repV=(document.getElementById('dispoRep')||{}).value?.toLowerCase()||'';
+  const nameV=(document.getElementById('dispoName')||{}).value?.toLowerCase()||'';
+  const sortV=(document.getElementById('dispoSort')||{}).value||'bad_desc';
+
+  let src=filtered;
+  if(fromV)src=src.filter(r=>r.date>=fromV);
+  if(toV)src=src.filter(r=>r.date<=toV);
+  if(repV)src=src.filter(r=>r.rep.toLowerCase().includes(repV));
+
+  const map={};src.forEach(r=>{
+    const d=nameV?r.dispo.toLowerCase().includes(nameV)?r.dispo:null:r.dispo;
+    if(!d)return;
+    if(!map[r.dispo])map[r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,t:0};
+    map[r.dispo][`s${r.score}`]++;map[r.dispo].t++;
+  });
+
+  let dispos=Object.entries(map);
+  if(sortV==='bad_desc')dispos.sort((a,b)=>(b[1].s1+b[1].s2)-(a[1].s1+a[1].s2));
+  else if(sortV==='total_desc')dispos.sort((a,b)=>b[1].t-a[1].t);
+  else dispos.sort((a,b)=>a[0].localeCompare(b[0],'tr'));
+
   const g=document.getElementById('dispoGrid');
   if(!dispos.length){g.innerHTML='<div style="color:var(--muted);padding:28px">Veri yok</div>';return;}
+
+  // Bar max değer: tüm dispo'ların max single skoruna göre değil, o dispo içindeki max'a göre
   g.innerHTML=dispos.map(([d,v])=>{
-    const mx=Math.max(v.s1,v.s2,v.s3,v.s4,v.s5,1);
-    const bars=[{l:'1 Puan',val:v.s1,c:'#e83b3b'},{l:'2 Puan',val:v.s2,c:'#c02929'},{l:'3 Puan',val:v.s3,c:'#f0b429'},{l:'4 Puan',val:v.s4,c:'#c9960e'},{l:'5 Puan',val:v.s5,c:'#22c97a'}];
-    return`<div class="dcard"><div class="dcard-name">${d} <span style="color:var(--muted);font-size:.63rem">(${v.t})</span></div>${bars.map(b=>`<div class="dbar"><div class="dbar-lbl">${b.l}</div><div class="dbar-bg"><div class="dbar-fill" style="width:${(b.val/mx*100)}%;background:${b.c}"></div></div><div class="dbar-n">${b.val}</div></div>`).join('')}</div>`;
-  }).join('');
-}
-
-// ── CROSS ──
-function setCX(m,el){cxMode=m;document.querySelectorAll('.cx-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderCross();}
-function buildCM(data){const m={};data.forEach(r=>{if(!m[r.rep])m[r.rep]={};if(!m[r.rep][r.dispo])m[r.rep][r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,sum:0,total:0};const c=m[r.rep][r.dispo];c[`s${r.score}`]++;c.sum+=r.score;c.total++;});return m;}
-function renderCross(){
-  const q=(document.getElementById('cxSearch')||{}).value?.toLowerCase().trim()||'';
-  const data=filtered;
-  if(!data.length){document.getElementById('rdCards').innerHTML='';document.getElementById('hmWrap').innerHTML='';document.getElementById('worstPairs').innerHTML='';return;}
-  const cross=buildCM(data);
-  const allReps=Object.keys(cross).sort();
-  const reps=q?allReps.filter(r=>r.toLowerCase().includes(q)):allReps;
-  const dispos=[...new Set(data.map(r=>r.dispo))].sort();
-
-  // ── Mini kart grid (sadece isim + özet) ──
-  const repsSorted=reps.map(rep=>{
-    let bad=0,total=0,sum=0;
-    Object.values(cross[rep]).forEach(c=>{bad+=c.s1+c.s2;total+=c.total;sum+=c.sum;});
-    return{rep,bad,total,avg:total?sum/total:0};
-  }).sort((a,b)=>b.bad-a.bad);
-
-  const miniCards=repsSorted.map(({rep,bad,avg})=>{
-    const bt=bad>=5?'#e83b3b':bad>=2?'#f0b429':'var(--border2)';
-    const ac=avg>=4.85?'#22c97a':avg>=4.70?'#f0b429':'#e83b3b';
-    const initials=rep.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return`<div onclick="openCxModal('${rep.replace(/'/g,"\'")}')" style="background:var(--s1);border:1px solid var(--border);border-top:2px solid ${bt};border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;" onmouseover="this.style.borderColor='${bt}';this.style.background='var(--s2)'" onmouseout="this.style.borderColor='var(--border)';this.style.borderTopColor='${bt}';this.style.background='var(--s1)'">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.72rem;color:white;flex-shrink:0;">${initials}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rep}</div>
-        <div style="font-size:.67rem;color:var(--muted2);margin-top:2px;">${bad>0?`<span style="color:#e83b3b">⚠ ${bad} düşük</span>`:'<span style="color:#22c97a">✓ Temiz</span>'} · Ort: <span style="color:${ac};font-weight:600">${avg.toFixed(2)}</span></div>
-      </div>
-      <div style="font-size:.65rem;color:var(--muted);flex-shrink:0;">›</div>
+    const maxAll=Math.max(v.s1,v.s2,v.s3,v.s4,v.s5,1);
+    const bars=[
+      {l:'1 Puan',val:v.s1,c:'#e83b3b'},
+      {l:'2 Puan',val:v.s2,c:'#f0b429'},
+      {l:'3 Puan',val:v.s3,c:'#a0a0a0'},
+      {l:'4 Puan',val:v.s4,c:'#c9960e'},
+      {l:'5 Puan',val:v.s5,c:'#22c97a'}
+    ];
+    return`<div class="dcard">
+      <div class="dcard-name">${d} <span style="color:var(--muted);font-size:.63rem">(${v.t})</span></div>
+      ${bars.map(b=>`<div class="dbar">
+        <div class="dbar-lbl">${b.l}</div>
+        <div class="dbar-bg"><div class="dbar-fill" style="width:${(b.val/maxAll*100).toFixed(1)}%;background:${b.c}"></div></div>
+        <div class="dbar-n">${b.val}</div>
+      </div>`).join('')}
     </div>`;
   }).join('');
-
-  document.getElementById('rdCards').innerHTML=`
-    <div style="font-size:.7rem;color:var(--muted2);margin-bottom:10px;">${repsSorted.length} temsilci ${q?'(filtrelendi)':''} — Detay için tıklayın</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">${miniCards||'<div style="color:var(--muted);padding:16px">Temsilci bulunamadı</div>'}</div>`;
-
-  // ── Heatmap ──
-  const topReps=[...allReps].sort((a,b)=>Object.values(cross[b]).reduce((s,c)=>s+c.total,0)-Object.values(cross[a]).reduce((s,c)=>s+c.total,0)).slice(0,15);
-  const dt={};data.forEach(r=>dt[r.dispo]=(dt[r.dispo]||0)+1);
-  const topDispos=Object.keys(dt).sort((a,b)=>dt[b]-dt[a]).slice(0,10);
-  let gmax=1;topReps.forEach(rep=>topDispos.forEach(d=>{const c=cross[rep]?.[d];if(c){const v=cxMode==='bad12'?c.s1+c.s2:cxMode==='avg'?c.sum/c.total:c.total;if(v>gmax)gmax=v;}}));
-  const hdr=topDispos.map(d=>`<th>${d}</th>`).join('');
-  const body=topReps.map(rep=>{
-    const cells=topDispos.map(d=>{
-      const c=cross[rep]?.[d];
-      if(!c||c.total===0)return`<td><div class="hm-cell" style="color:var(--border2)">—</div></td>`;
-      let val,disp,bg,tc;
-      if(cxMode==='bad12'){val=c.s1+c.s2;disp=val;const i=Math.min(val/Math.max(gmax,1),1);if(val===0){bg='rgba(34,201,122,.08)';tc='var(--muted)';}else{const r2=Math.round(232*i+34*(1-i)),g2=Math.round(59*i+201*(1-i)),b2=Math.round(59*i+122*(1-i));bg=`rgba(${r2},${g2},${b2},${.12+i*.35})`;tc=i>.5?'var(--red)':'var(--gold)';}}
-      else if(cxMode==='avg'){val=c.sum/c.total;disp=val.toFixed(1);tc=val>=4.85?'var(--green)':val>=4.70?'var(--gold)':'var(--red)';bg=val>=4.85?'rgba(34,201,122,.10)':val>=4.70?'rgba(240,180,41,.10)':'rgba(232,59,59,.13)';}
-      else{val=c.total;disp=val;const i=Math.min(val/gmax,1);bg=`rgba(45,126,247,${.06+i*.25})`;tc='var(--accent)';}
-      return`<td title="${rep} / ${d}"><div class="hm-cell" style="background:${bg};color:${tc}">${disp}</div></td>`;
-    }).join('');
-    const rb=topDispos.reduce((s,d)=>s+(cross[rep]?.[d]?.s1||0)+(cross[rep]?.[d]?.s2||0),0);
-    return`<tr><td class="hm-rep" style="cursor:pointer" onclick="openCxModal('${rep.replace(/'/g,"\'")}')">${rep}${rb>0?`<span style="font-size:.58rem;color:var(--red);margin-left:5px">⚠${rb}</span>`:''}</td>${cells}</tr>`;
-  }).join('');
-  document.getElementById('hmWrap').innerHTML=`<table class="hm-table"><thead><tr><th style="text-align:left">Temsilci \ Dispo</th>${hdr}</tr></thead><tbody>${body}</tbody></table>`;
-
-  // ── Worst pairs ──
-  const pairs=[];allReps.forEach(rep=>{Object.entries(cross[rep]).forEach(([d,c])=>{if(c.total===0)return;pairs.push({rep,dispo:d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.sum/c.total,total:c.total});});});
-  pairs.sort((a,b)=>b.bad12-a.bad12);
-  document.getElementById('worstPairs').innerHTML=pairs.slice(0,10).map((p,i)=>{
-    const risk=p.bad12>=5?`<span class="risk-hi">🔴 Yüksek</span>`:p.bad12>=2?`<span class="risk-md">🟡 Orta</span>`:`<span class="risk-lo">🟢 Düşük</span>`;
-    const ac=p.avg>=4.85?'var(--green)':p.avg>=4.70?'var(--gold)':'var(--red)';
-    return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:500;cursor:pointer;color:var(--accent)" onclick="openCxModal('${p.rep.replace(/'/g,"\'")}')">${p.rep}</td><td style="color:var(--muted2)">${p.dispo}</td><td style="color:var(--red);font-weight:700">${p.s1}</td><td style="color:var(--gold);font-weight:700">${p.s2}</td><td style="font-weight:700;color:var(--red)">${p.bad12}</td><td style="color:${ac};font-weight:600">${p.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
-  }).join('');
 }
 
-function openCxModal(rep){
-  const cross=buildCM(filtered);
-  const repData=cross[rep];
-  if(!repData){return;}
-  let bad=0,total=0,sum=0;
-  Object.values(repData).forEach(c=>{bad+=c.s1+c.s2;total+=c.total;sum+=c.sum;});
-  const avg=total?sum/total:0;
-  const ac=avg>=4.85?'#22c97a':avg>=4.70?'#f0b429':'#e83b3b';
-
-  document.getElementById('cxModalName').textContent=rep;
-  document.getElementById('cxModalMeta').textContent=`${total} anket · ${Object.keys(repData).length} farklı dispo`;
-  document.getElementById('cxModalStats').innerHTML=`
-    <div class="sc c-blue"><div class="sc-tag">Toplam Anket</div><div class="sc-val">${total}</div></div>
-    <div class="sc c-red"><div class="sc-tag">Düşük Puan (1–2)</div><div class="sc-val" style="color:${bad>0?'var(--red)':'var(--green)'}">${bad}</div></div>
-    <div class="sc c-gold"><div class="sc-tag">Ort. Puan</div><div class="sc-val" style="color:${ac}">${avg.toFixed(2)}</div></div>`;
-
-  const rows=Object.entries(repData)
-    .map(([d,c])=>({d,s1:c.s1,s2:c.s2,bad12:c.s1+c.s2,avg:c.total?c.sum/c.total:0,total:c.total}))
-    .filter(e=>e.total>0).sort((a,b)=>b.bad12-a.bad12);
-  document.getElementById('cxModalTable').innerHTML=rows.map(e=>{
-    const risk=e.bad12>=5?`<span class="risk-hi">🔴 Yüksek</span>`:e.bad12>=2?`<span class="risk-md">🟡 Orta</span>`:e.bad12>=1?`<span class="risk-lo" style="color:var(--gold)">🟡 Düşük</span>`:`<span class="risk-lo">🟢 —</span>`;
-    const ac2=e.avg>=4.85?'var(--green)':e.avg>=4.70?'var(--gold)':'var(--red)';
-    return`<tr><td style="font-size:.75rem">${e.d}</td><td style="color:var(--red);font-weight:700;text-align:center">${e.s1||'—'}</td><td style="color:var(--gold);font-weight:700;text-align:center">${e.s2||'—'}</td><td style="text-align:center">${e.total}</td><td style="color:${ac2};font-weight:600;text-align:center">${e.avg.toFixed(2)}</td><td>${risk}</td></tr>`;
-  }).join('');
-
-  document.getElementById('cxModal').style.display='block';
-  document.body.style.overflow='hidden';
-}
-
-function closeCxModal(){
-  document.getElementById('cxModal').style.display='none';
-  document.body.style.overflow='';
-}
-// ESC ile kapat
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCxModal();});
+// ── CROSS: kaldırıldı ──
 
 
 
@@ -1183,28 +1153,25 @@ function renderAll2(){
   const dQ=(document.getElementById('fDispo')||{}).value?.toLowerCase()||'';
   const sQ=(document.getElementById('fScore')||{}).value||'';
   const tQ=(document.getElementById('fTL')||{}).value?.toLowerCase()||'';
-  const cQ=(document.getElementById('fCallId')||{}).value?.toLowerCase()||'';
   const rows=filtered.filter(r=>{
     if(rQ&&!r.rep.toLowerCase().includes(rQ))return false;
     if(dQ&&!r.dispo.toLowerCase().includes(dQ))return false;
     if(sQ&&r.score!==parseInt(sQ))return false;
     if(tQ&&!(r.teamLeader||'').toLowerCase().includes(tQ))return false;
-    if(cQ&&!(r.callId||'').toLowerCase().includes(cQ))return false;
     return true;
   });
   document.getElementById('allCount').textContent=rows.length+' kayıt';
   const tb=document.getElementById('allTable');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="padding:28px;color:var(--muted);text-align:center">Kayıt bulunamadı</td></tr>';return;}
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Kayıt bulunamadı</td></tr>';return;}
   tb.innerHTML=rows.map((r,i)=>`<tr>
     <td style="color:var(--muted)">${i+1}</td>
     <td>${r.rep}</td><td>${r.date}</td>
     <td style="color:var(--muted2);font-size:.73rem">${r.dispo}</td>
     <td><span class="badge b${r.score}">${scoreStars(r.score)}</span></td>
     <td style="font-size:.72rem;color:var(--accent)">${r.teamLeader||'—'}</td>
-    <td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td>
-    <td style="font-family:monospace;font-size:.68rem;color:var(--muted2)">${r.callId||'—'}</td></tr>`).join('');
+    <td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td></tr>`).join('');
 }
-function clearF(){['fRep','fDispo','fScore','fTL','fCallId'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderAll2();}
+function clearF(){['fRep','fDispo','fScore','fTL'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderAll2();}
 function exportCSV(){
   const h=['Temsilci','Tarih','Dispo','Puan','Team Leader','Proje'];
   const rows=filtered.map(r=>[r.rep,r.date,r.dispo,r.score,r.teamLeader||'',r.proj].map(v=>`"${v}"`).join(','));
@@ -1221,6 +1188,7 @@ function amTab(id,el){
   document.querySelectorAll('.am-sec').forEach(s=>s.style.display='none');
   document.getElementById('amSec_'+id).style.display='block';
   if(id==='gelisim')renderAgentGelisim();
+  if(id==='motivasyon')renderAgentMotivasyon();
 }
 
 function openAgent(name){
@@ -1261,14 +1229,8 @@ function openAgent(name){
   const dist=[0,0,0,0,0];data.forEach(r=>dist[r.score-1]++);
   agentCharts.dist=new Chart(document.getElementById('amDist').getContext('2d'),{type:'doughnut',data:{labels:['1★','2★★','3★★★','4★★★★','5★★★★★'],datasets:[{data:dist,backgroundColor:['#e83b3b','#c02929','#f0b429','#c9960e','#22c97a'],borderWidth:0,hoverOffset:6}]},options:{plugins:{legend:{position:'right',labels:{color:'#7a8aaa',font:{size:11},padding:12}}},responsive:true,cutout:'60%'}});
 
-  // dispo chart
-  const dm={};data.forEach(r=>{if(!dm[r.dispo])dm[r.dispo]={s1:0,s2:0};if(r.score===1)dm[r.dispo].s1++;if(r.score===2)dm[r.dispo].s2++;});
-  const dkeys=Object.keys(dm).sort((a,b)=>(dm[b].s1+dm[b].s2)-(dm[a].s1+dm[a].s2)).slice(0,8);
-  agentCharts.dispo=new Chart(document.getElementById('amDispo').getContext('2d'),{type:'bar',data:{labels:dkeys,datasets:[{label:'1 Puan — Detractör',data:dkeys.map(k=>dm[k].s1),backgroundColor:'#e83b3b',borderRadius:4,borderSkipped:false},{label:'2 Puan — Detractör',data:dkeys.map(k=>dm[k].s2),backgroundColor:'#c02929',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{labels:{color:'#9aa8c0'}}},scales:{x:{grid:{color:'#1a2336'},ticks:{color:'#7a8aaa'},stacked:true},y:{grid:{color:'#1a2336'},ticks:{color:'#4a5670',stepSize:1},stacked:true}},responsive:true}});
-
-  // records
-  const sorted=[...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
-  document.getElementById('amRecords').innerHTML=sorted.map(r=>`<tr><td>${r.date}</td><td style="font-size:.72rem;color:var(--muted2)">${r.dispo}</td><td><span class="badge b${r.score}">${scoreStars(r.score)}</span></td><td style="font-size:.7rem;color:var(--muted2)">${r.proj}</td></tr>`).join('');
+  // dispo detractor panel (metin/bar bazlı yeni UI)
+  renderAmDispoPanel(data);
 
   // sekmeleri sıfırla
   document.querySelectorAll('.am-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
@@ -1284,6 +1246,7 @@ function closeAgent(){
 }
 
 document.getElementById('agentModal').addEventListener('click',function(e){if(e.target===this)closeAgent();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAgent();}});
 
 
 // ══ GELİŞİM RAPORU ══
@@ -1578,70 +1541,319 @@ function renderTLDetail(){
    }).join('')}</tbody></table></div>`;
 }
 
-// ══ HAKSIZ 1'LER ══
+// ══ HAKSIZ (İtiraz Yönetimi) — YENİ VERSIYON ══
 function saveHaksiz(){localStorage.setItem('sv_haksiz',JSON.stringify(haksizList));}
 
-function hLookup(){
-  const val=document.getElementById('hCallId').value.trim().toLowerCase();
-  const hint=document.getElementById('hHint');
-  const repIn=document.getElementById('hRep');
-  if(!val){repIn.value='';hint.textContent='';return;}
-  const match=allRecords.find(r=>(r.callId||'').toLowerCase().trim()===val);
-  if(match){
-    repIn.value=match.rep;
-    hint.textContent=`✓ Bulundu — ${match.date} · ${match.dispo} · Puan: ${match.score}`;
-    hint.style.color='var(--green)';
-  }else{
-    repIn.value='';
-    hint.textContent='Bu dönemde bulunamadı — yine de ekleyebilirsiniz';
-    hint.style.color='var(--muted)';
+// Haksız listesi için unique key: rep+date+dispo+score
+function haksizKey(r){return`${r.rep}||${r.date}||${r.dispo}||${r.score}`;}
+
+function getHaksizDetractors(){
+  const periodSel=(document.getElementById('hPeriod')||{}).value||'monthly';
+  const now=new Date();
+  let from,to;
+  if(periodSel==='daily'){
+    from=to=now.toISOString().slice(0,10);
+  } else {
+    from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    to=now.toISOString().slice(0,10);
   }
+  return filtered.filter(r=>r.score<=2&&r.date>=from&&r.date<=to);
 }
 
-function addHaksiz(){
-  const callId=document.getElementById('hCallId').value.trim();
-  const reason=document.getElementById('hReason').value.trim();
-  if(!callId){toast('CALL/CHAT ID boş olamaz','err');return;}
-  if(haksizList.find(h=>h.callId===callId)){toast('Bu ID zaten listede!','err');return;}
-  haksizList.push({callId,reason,addedAt:new Date().toISOString()});
+function renderHaksizList(){
+  const repF=(document.getElementById('hRepFilter')||{}).value?.toLowerCase()||'';
+  const dispoF=(document.getElementById('hDispoFilter')||{}).value?.toLowerCase()||'';
+  const hKeys=new Set(haksizList.map(h=>h.key));
+  let rows=getHaksizDetractors();
+  if(repF)rows=rows.filter(r=>r.rep.toLowerCase().includes(repF));
+  if(dispoF)rows=rows.filter(r=>r.dispo.toLowerCase().includes(dispoF));
+  rows.sort((a,b)=>b.date.localeCompare(a.date)||a.rep.localeCompare(b.rep,'tr'));
+
+  const tb=document.getElementById('hDetractorTable');
+  if(!rows.length){
+    tb.innerHTML='<tr><td colspan="7" style="padding:24px;color:var(--muted);text-align:center">Bu dönemde 1–2 puan alan kayıt yok</td></tr>';
+    document.getElementById('hMasterCb').checked=false;
+    updateSelCount();
+    return;
+  }
+  tb.innerHTML=rows.map((r,i)=>{
+    const key=haksizKey(r);
+    const already=hKeys.has(key);
+    const scoreColor=r.score===1?'var(--red)':'var(--gold)';
+    return`<tr style="${already?'opacity:.45;':''}">
+      <td><input type="checkbox" class="hcb" data-idx="${i}" ${already?'disabled title="Zaten listede"':''} onchange="updateSelCount()" style="accent-color:var(--accent)"></td>
+      <td style="font-size:.76rem">${r.date}</td>
+      <td style="font-weight:500">${r.rep}</td>
+      <td style="font-size:.72rem;color:var(--muted2)">${r.dispo}</td>
+      <td><span style="background:${r.score===1?'rgba(232,59,59,.18)':'rgba(240,180,41,.16)'};color:${scoreColor};padding:2px 10px;border-radius:12px;font-weight:700;font-size:.72rem">${r.score} ★</span></td>
+      <td style="font-size:.7rem;color:var(--muted2)">${r.proj||'—'}</td>
+      <td>${already?'<span style="font-size:.68rem;color:var(--muted2)">✓ Eklendi</span>':''}</td>
+    </tr>`;
+  }).join('');
+  // store rows for bulk add
+  document.getElementById('hDetractorTable')._rows=rows;
+  updateSelCount();
+}
+
+function updateSelCount(){
+  const checked=document.querySelectorAll('.hcb:checked').length;
+  document.getElementById('hSelCount').textContent=checked+' seçili';
+}
+
+function masterCheck(cb){
+  document.querySelectorAll('.hcb:not(:disabled)').forEach(c=>c.checked=cb.checked);
+  updateSelCount();
+}
+
+function toggleSelectAll(){
+  const cbs=document.querySelectorAll('.hcb:not(:disabled)');
+  const allChecked=[...cbs].every(c=>c.checked);
+  cbs.forEach(c=>c.checked=!allChecked);
+  document.getElementById('hMasterCb').checked=!allChecked;
+  updateSelCount();
+}
+
+function addSelectedHaksiz(){
+  const rows=document.getElementById('hDetractorTable')._rows||[];
+  const reason=(document.getElementById('hBulkReason')||{}).value?.trim()||'';
+  const hKeys=new Set(haksizList.map(h=>h.key));
+  let added=0;
+  document.querySelectorAll('.hcb:checked:not(:disabled)').forEach(cb=>{
+    const idx=parseInt(cb.dataset.idx);
+    const r=rows[idx];
+    if(!r)return;
+    const key=haksizKey(r);
+    if(hKeys.has(key))return;
+    haksizList.push({key,rep:r.rep,date:r.date,dispo:r.dispo,score:r.score,reason,addedAt:new Date().toISOString()});
+    hKeys.add(key);
+    added++;
+  });
+  if(!added){toast('Seçili kayıt yok veya zaten listede','err');return;}
   saveHaksiz();
-  document.getElementById('hCallId').value='';
-  document.getElementById('hReason').value='';
-  document.getElementById('hHint').textContent='';
-  document.getElementById('hRep').value='';
-  renderHaksiz();toast('Eklendi ✓','ok');
+  if(document.getElementById('hBulkReason'))document.getElementById('hBulkReason').value='';
+  renderHaksizList();
+  renderHaksiz();
+  toast(`${added} kayıt haksız listesine eklendi ✓`,'ok');
 }
 
-function removeHaksiz(callId){haksizList=haksizList.filter(h=>h.callId!==callId);saveHaksiz();renderHaksiz();}
-function clearHaksiz(){if(!haksizList.length)return;haksizList=[];saveHaksiz();renderHaksiz();toast('Liste temizlendi','ok');}
+function removeHaksiz(key){haksizList=haksizList.filter(h=>h.key!==key);saveHaksiz();renderHaksizList();renderHaksiz();}
+function clearHaksiz(){if(!haksizList.length)return;haksizList=[];saveHaksiz();renderHaksizList();renderHaksiz();toast('Liste temizlendi','ok');}
 
 function renderHaksiz(){
-  const ids=new Set(haksizList.map(h=>h.callId.toLowerCase().trim()));
-  const allD=filtered,cleanD=filtered.filter(r=>!ids.has((r.callId||'').toLowerCase().trim()));
+  const hKeys=new Set(haksizList.map(h=>h.key));
+
+  // haksız kayıtları filtered'dan çıkar (key bazlı eşleşme)
+  const allD=filtered;
+  const cleanD=filtered.filter(r=>!hKeys.has(haksizKey(r)));
   const tAvg=allD.length?allD.reduce((s,r)=>s+r.score,0)/allD.length:0;
   const cAvg=cleanD.length?cleanD.reduce((s,r)=>s+r.score,0)/cleanD.length:0;
   const diff=cAvg-tAvg;
+
   document.getElementById('hcGrid').innerHTML=`
     <div class="sc c-red"><div class="sc-tag">Mevcut Ortalama</div><div class="sc-val">${tAvg?tAvg.toFixed(2):'—'}</div><div class="sc-sub">${allD.length} toplam anket</div></div>
-    <div class="sc c-green"><div class="sc-tag">Düzeltilmiş Ort.</div><div class="sc-val">${cAvg?cAvg.toFixed(2):'—'}</div><div class="sc-sub">${haksizList.length} haksız 1 çıkarılınca</div></div>
+    <div class="sc c-green"><div class="sc-tag">Düzeltilmiş Ort.</div><div class="sc-val">${cAvg?cAvg.toFixed(2):'—'}</div><div class="sc-sub">${haksizList.length} haksız çıkarılınca</div></div>
     <div class="sc ${diff>0?'c-gold':'c-blue'}"><div class="sc-tag">Fark</div><div class="sc-val">${diff>0?'+':''}${diff?diff.toFixed(2):'0.00'}</div><div class="sc-sub">${diff>0?'📈 gerçek performans daha iyi':'fark yok'}</div></div>`;
 
+  // Haksız listesi tablosu
   const tb=document.getElementById('hTable');
-  tb.innerHTML=!haksizList.length?'<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Henüz kayıt yok — CALL/CHAT ID ekleyin</td></tr>':
-    haksizList.map((h,i)=>{
-      const m=allRecords.find(r=>(r.callId||'').toLowerCase().trim()===h.callId.toLowerCase().trim());
-      return`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-family:monospace;font-size:.7rem;color:var(--accent)">${h.callId}</td><td>${m?m.rep:'<span style="color:var(--muted2)">—</span>'}</td><td style="color:var(--muted2)">${m?m.date:'—'}</td><td style="color:var(--muted2);font-size:.72rem">${m?m.dispo:'—'}</td><td style="font-size:.73rem;color:var(--muted2)">${h.reason||'—'}</td><td><button class="sbtn sm" style="color:var(--red);border-color:rgba(232,59,59,.35)" onclick="removeHaksiz('${h.callId}')">Çıkar</button></td></tr>`;
-    }).join('');
+  tb.innerHTML=!haksizList.length
+    ?'<tr><td colspan="7" style="padding:28px;color:var(--muted);text-align:center">Henüz kayıt yok — aşağıdan 1–2 puanlı kayıt seçin</td></tr>'
+    :haksizList.map((h,i)=>`<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td style="font-weight:500">${h.rep}</td>
+      <td style="color:var(--muted2)">${h.date}</td>
+      <td style="color:var(--muted2);font-size:.72rem">${h.dispo}</td>
+      <td><span style="color:${h.score===1?'var(--red)':'var(--gold)'};font-weight:700">${h.score} ★</span></td>
+      <td style="font-size:.73rem;color:var(--muted2)">${h.reason||'—'}</td>
+      <td><button class="sbtn sm" style="color:var(--red);border-color:rgba(232,59,59,.35)" onclick="removeHaksiz('${h.key.replace(/'/g,"\\'")}')">Çıkar</button></td>
+    </tr>`).join('');
 
-  const repMap={};allD.forEach(r=>{if(!repMap[r.rep])repMap[r.rep]={all:[],clean:[]};repMap[r.rep].all.push(r);if(!ids.has((r.callId||'').toLowerCase().trim()))repMap[r.rep].clean.push(r);});
+  // Temsilci bazlı etki
+  const repMap={};
+  allD.forEach(r=>{
+    if(!repMap[r.rep])repMap[r.rep]={all:[],clean:[]};
+    repMap[r.rep].all.push(r);
+    if(!hKeys.has(haksizKey(r)))repMap[r.rep].clean.push(r);
+  });
   const affected=Object.entries(repMap).filter(([,d])=>d.all.length!==d.clean.length);
-  document.getElementById('hRepTable').innerHTML=!affected.length?'<tr><td colspan="5" style="padding:22px;color:var(--muted);text-align:center">Eşleşen temsilci yok — dönem filtresini kontrol edin</td></tr>':
-    affected.map(([rep,d])=>{
+  document.getElementById('hRepTable').innerHTML=!affected.length
+    ?'<tr><td colspan="5" style="padding:22px;color:var(--muted);text-align:center">Eşleşen temsilci yok</td></tr>'
+    :affected.map(([rep,d])=>{
       const ca=d.all.reduce((s,r)=>s+r.score,0)/d.all.length;
       const cla=d.clean.length?d.clean.reduce((s,r)=>s+r.score,0)/d.clean.length:0;
       const df=cla-ca;
       return`<tr><td style="font-weight:500">${rep}</td><td style="color:var(--red);font-weight:600">${ca.toFixed(2)}</td><td style="color:var(--green);font-weight:600">${cla?cla.toFixed(2):'—'}</td><td style="color:var(--gold);font-weight:700">${df>0?'+':''}${df.toFixed(2)}</td><td style="color:var(--muted2)">${d.all.length-d.clean.length} kayıt</td></tr>`;
     }).join('');
+
+  // detractor list de render et
+  renderHaksizList();
+}
+
+// ══ AGENT DISPO PANEL — Detractor odaklı metin/bar UI ══
+function renderAmDispoPanel(data){
+  const wrap=document.getElementById('amDispoPanelWrap');
+  if(!wrap)return;
+  const dm={};
+  data.forEach(r=>{
+    if(!dm[r.dispo])dm[r.dispo]={s1:0,s2:0,s3:0,s4:0,s5:0,total:0};
+    dm[r.dispo][`s${r.score}`]++;
+    dm[r.dispo].total++;
+  });
+  const entries=Object.entries(dm)
+    .map(([d,v])=>({d,s1:v.s1,s2:v.s2,bad:v.s1+v.s2,total:v.total,v}))
+    .filter(e=>e.bad>0)
+    .sort((a,b)=>b.bad-a.bad);
+
+  if(!entries.length){
+    wrap.innerHTML='<div class="cc-title">Dispo Bazlı Detractör Analizi</div><div style="padding:18px;color:var(--green);font-weight:600">✓ Bu dönemde 1–2 puan almış dispo bulunmuyor</div>';
+    return;
+  }
+
+  const maxBad=entries[0].bad;
+  const totalBad=entries.reduce((a,e)=>a+e.bad,0);
+
+  wrap.innerHTML=`
+    <div class="cc-title" style="margin-bottom:16px">
+      ⚠️ Dispo Bazlı Detractör Analizi
+      <span style="font-size:.68rem;color:var(--muted2);font-weight:400;margin-left:8px">${entries.length} dispo · toplam ${totalBad} düşük puan</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${entries.map((e,i)=>{
+        const pct=maxBad>0?(e.bad/maxBad*100).toFixed(0):0;
+        const totalPct=e.total>0?((e.bad/e.total)*100).toFixed(0):0;
+        const sev=e.bad>=5?{c:'#e83b3b',bg:'rgba(232,59,59,.12)',lbl:'Kritik'}:e.bad>=3?{c:'#f0b429',bg:'rgba(240,180,41,.10)',lbl:'Yüksek'}:{c:'#9b7ef8',bg:'rgba(155,126,248,.10)',lbl:'Orta'};
+        return`<div style="background:var(--s2);border:1px solid ${e.bad>=5?'rgba(232,59,59,.25)':e.bad>=3?'rgba(240,180,41,.2)':'var(--border)'};border-left:3px solid ${sev.c};border-radius:8px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="font-weight:600;font-size:.8rem;flex:1;">${e.d}</span>
+            <span style="background:${sev.bg};color:${sev.c};font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:10px;">${sev.lbl}</span>
+            <span style="font-size:.68rem;color:var(--muted2)">${e.total} anket · %${totalPct} oran</span>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+            <div style="flex:1;min-width:120px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:.62rem;color:var(--muted2)">Düşük puan yoğunluğu</span>
+                <span style="font-size:.68rem;font-weight:700;color:${sev.c}">${e.bad} adet</span>
+              </div>
+              <div style="height:8px;background:var(--s3);border-radius:4px;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${sev.c},${sev.c}99);border-radius:4px;transition:width .5s;"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-shrink:0;">
+              ${e.s1>0?`<div style="text-align:center;background:rgba(232,59,59,.12);border-radius:6px;padding:4px 10px;"><div style="font-size:.62rem;color:var(--muted2)">1 Puan</div><div style="font-weight:800;font-size:.95rem;color:#e83b3b">${e.s1}</div></div>`:''}
+              ${e.s2>0?`<div style="text-align:center;background:rgba(240,180,41,.10);border-radius:6px;padding:4px 10px;"><div style="font-size:.62rem;color:var(--muted2)">2 Puan</div><div style="font-weight:800;font-size:.95rem;color:#f0b429">${e.s2}</div></div>`:''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ══ MOTİVASYON (Hedef Hesaplama) ══
+function renderAgentMotivasyon(){
+  const wrap=document.getElementById('amMotivasyonContent');
+  if(!wrap)return;
+  const name=document.getElementById('amName').textContent;
+  const data=filtered.filter(r=>r.rep===name);
+  if(!data.length){wrap.innerHTML='<div style="color:var(--muted);padding:28px;text-align:center">Veri yok</div>';return;}
+
+  const TARGET=4.85;
+  const total=data.length;
+  const currentSum=data.reduce((s,r)=>s+r.score,0);
+  const currentAvg=currentSum/total;
+  const bad=data.filter(r=>r.score<=2).length;
+  const pro=data.filter(r=>r.score===5).length;
+
+  // Kaç tane 5 puan daha lazım?
+  // (currentSum + 5*n) / (total + n) >= TARGET
+  // currentSum + 5n >= TARGET * (total + n)
+  // 5n - TARGET*n >= TARGET*total - currentSum
+  // n*(5 - TARGET) >= TARGET*total - currentSum
+  // n >= (TARGET*total - currentSum) / (5 - TARGET)
+  let needed5=0;
+  if(currentAvg<TARGET){
+    needed5=Math.ceil((TARGET*total-currentSum)/(5-TARGET));
+  }
+
+  const alreadyAt=currentAvg>=TARGET;
+  const gap=TARGET-currentAvg;
+  const gapColor=alreadyAt?'#22c97a':gap<=0.1?'#f0b429':'#e83b3b';
+  const progressPct=Math.min(currentAvg/TARGET*100,100);
+
+  // Günlük hedef: bugünkü anketler
+  const today=new Date().toISOString().slice(0,10);
+  const todayData=data.filter(r=>r.date===today);
+  const todayAvg=todayData.length?todayData.reduce((s,r)=>s+r.score,0)/todayData.length:null;
+
+  wrap.innerHTML=`
+    <!-- Hedef durumu -->
+    <div style="background:var(--s2);border:1px solid ${alreadyAt?'rgba(34,201,122,.3)':'rgba(45,126,247,.2)'};border-radius:14px;padding:20px 22px;margin-bottom:18px;">
+      <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:10px">Hedef Durumu — 4.85 Ortalama</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:.65rem;color:var(--muted2)">Mevcut Ortalama</div>
+          <div style="font-size:2.2rem;font-weight:800;line-height:1;color:${gapColor}">${currentAvg.toFixed(2)}</div>
+        </div>
+        <div style="font-size:1.5rem;color:var(--border2);padding-bottom:4px">→</div>
+        <div>
+          <div style="font-size:.65rem;color:var(--muted2)">Hedef</div>
+          <div style="font-size:2.2rem;font-weight:800;line-height:1;color:var(--muted2)">${TARGET.toFixed(2)}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          ${alreadyAt
+            ?`<div style="background:rgba(34,201,122,.15);color:#22c97a;padding:8px 16px;border-radius:10px;font-weight:700;font-size:.88rem">🏆 HEDEFE ULAŞILDI</div>`
+            :`<div style="background:rgba(232,59,59,.12);color:var(--red);padding:8px 16px;border-radius:10px;font-weight:700;font-size:.88rem">⚠️ ${gap.toFixed(2)} puan eksik</div>`}
+        </div>
+      </div>
+      <!-- İlerleme çubuğu -->
+      <div style="height:10px;background:var(--s3);border-radius:6px;overflow:hidden;margin-bottom:6px;">
+        <div style="width:${progressPct.toFixed(1)}%;height:100%;background:linear-gradient(90deg,${gapColor},${gapColor}cc);border-radius:6px;transition:width .6s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);">
+        <span>0</span><span>${progressPct.toFixed(0)}% hedefe ulaşıldı</span><span>4.85</span>
+      </div>
+    </div>
+
+    <!-- Gerekli 5 puan hesabı -->
+    ${!alreadyAt?`
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;">
+      <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:14px">🎯 Hedefe Ulaşmak İçin Gerekli Promotör Anket</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="background:rgba(45,126,247,.12);border:1px solid rgba(45,126,247,.25);border-radius:12px;padding:16px 24px;text-align:center;min-width:120px;">
+          <div style="font-size:.65rem;color:var(--muted2);margin-bottom:4px">Arka arkaya gerekli</div>
+          <div style="font-size:3rem;font-weight:800;color:var(--accent);line-height:1">${needed5}</div>
+          <div style="font-size:.72rem;color:var(--accent);margin-top:4px">× 5 puan anket</div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:.76rem;color:var(--text);line-height:1.8;">
+            Şu an <strong style="color:${gapColor}">${currentAvg.toFixed(2)}</strong> ortalama ile <strong>${total}</strong> anket var.<br>
+            <strong style="color:var(--accent)">${needed5}</strong> tane daha 5 puanlı (promotör) anket alınırsa ortalama <strong style="color:var(--green)">≥ 4.85</strong>'e ulaşılır.<br>
+            <span style="font-size:.68rem;color:var(--muted2)">Formül: (${currentSum} + 5×${needed5}) ÷ (${total} + ${needed5}) = ${((currentSum+5*needed5)/(total+needed5)).toFixed(3)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`:''}
+
+    <!-- Dönem özeti -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px;">
+      <div class="sc c-blue"><div class="sc-tag">Toplam Anket</div><div class="sc-val">${total}</div><div class="sc-sub">seçili dönem</div></div>
+      <div class="sc c-green"><div class="sc-tag">Promotör (5★)</div><div class="sc-val">${pro}</div><div class="sc-sub">${((pro/total)*100).toFixed(0)}% oran</div></div>
+      <div class="sc c-red"><div class="sc-tag">Detractör (1–2★)</div><div class="sc-val">${bad}</div><div class="sc-sub">${((bad/total)*100).toFixed(0)}% oran</div></div>
+      ${todayData.length?`<div class="sc c-gold"><div class="sc-tag">Bugünkü Ort.</div><div class="sc-val" style="color:${todayAvg>=4.85?'var(--green)':todayAvg>=4.70?'var(--gold)':'var(--red)'}">${todayAvg.toFixed(2)}</div><div class="sc-sub">${todayData.length} anket</div></div>`:''}
+    </div>
+
+    <!-- Motivasyonel mesaj -->
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:8px">💡 Öneri</div>
+      <div style="font-size:.82rem;line-height:1.7;color:var(--text);">
+        ${alreadyAt
+          ?`Harika! <strong>${name}</strong>, ${TARGET} hedefinin üzerinde. Mevcut performansı korumak için her düşük puanda hemen aksiyon almayı sürdürmeli.`
+          :needed5<=5
+          ?`<strong>${name}</strong> hedefe çok yakın! Sadece <strong style="color:var(--accent)">${needed5}</strong> tane daha 5 puanlı anket yeterli. Bir sonraki müşteri görüşmesini özenle tamamlamak büyük fark yaratabilir.`
+          :needed5<=15
+          ?`<strong>${name}</strong> için hedef ulaşılabilir. <strong style="color:var(--accent)">${needed5}</strong> promotör anket gerekiyor. Dispo bazlı düşük puanlara odaklanmak ve Özet sekmesindeki detractör dispolarını incelemek hız kazandırır.`
+          :`<strong>${name}</strong> şu an hedefin altında. <strong style="color:var(--accent)">${needed5}</strong> promotör anket gerekiyor. Team Leader ile birlikte düşük puan alan dispo türleri için özel bir aksiyon planı oluşturulmasını öneririz.`}
+      </div>
+    </div>`;
 }
 
 // ══ DEMO ══
