@@ -272,14 +272,13 @@ footer span{font-size:.66rem;color:var(--muted);}
 
   <!-- Tek bir açıklama cümlesi -->
   <div style="font-size:.78rem;color:var(--muted2);margin-bottom:20px;line-height:1.7;">
-   Google Sheets'teki veri bağlantı URL'ini yapıştırın.
+   Apps Script Web App URL'ini yapıştırın. Canlı veri (Sayfa1) <strong style="color:var(--text)">ve</strong> Arşiv sayfası aynı endpoint üzerinden otomatik çekilir — tek URL yeterli.
   </div>
 
-  <div class="setup-lbl">Data Sheet Bağlantısı</div>
+  <div class="setup-lbl">Web App URL</div>
   <div class="sheets-list" id="sheetsList"></div>
   <button class="btn-add-sheet" onclick="addSheetRow()">+ Yeni Proje Ekle</button>
 
-  <div style="display:flex;gap:10px;margin-top:16px;">
    <button class="btn-load" id="btnLoad" onclick="loadAll()" style="flex:1">Bağlan ve Yükle</button>
    <button class="btn-load" onclick="testConnection()" style="flex:0 0 auto;background:var(--s3);border:1px solid var(--border2);color:var(--muted2);width:auto;padding:0 18px;" id="btnTest">Test</button>
   </div>
@@ -450,26 +449,38 @@ footer span{font-size:.66rem;color:var(--muted);}
  <div class="hc-grid" id="hcGrid"></div>
 
  <!-- Dönem filtresi + detractor listesi -->
+ <!-- Dönem filtresi + detractor listesi -->
  <div class="cc" style="margin-bottom:18px">
   <div class="cc-title" style="margin-bottom:14px">Haksız Anket Seçimi — Detractor Kayıtları (1–2 Puan)</div>
-  <div class="frow" style="margin-bottom:14px;background:transparent;border:none;padding:0">
-   <div class="fg">
-    <label>Dönem</label>
-    <select id="hPeriod" onchange="renderHaksizList()">
-     <option value="daily">Günlük (Bugün)</option>
-     <option value="monthly" selected>Aylık (Bu Ay)</option>
-    </select>
+  <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+   <!-- Hızlı dönem seçici -->
+   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+    <span style="font-size:.62rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-right:2px">Hızlı:</span>
+    <button class="pb active" id="hqBugün" onclick="hQuick('today',this)">Bugün</button>
+    <button class="pb" id="hqHafta" onclick="hQuick('week',this)">Bu Hafta</button>
+    <button class="pb" id="hqAy" onclick="hQuick('month',this)">Bu Ay</button>
+    <button class="pb" id="hqTümü" onclick="hQuick('all',this)">Tümü</button>
+    <span style="color:var(--border2);margin:0 6px">|</span>
+    <span style="font-size:.62rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-right:2px">Özel Aralık:</span>
+    <input type="date" id="hFromDate" onchange="hQuick('custom',null)" style="background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;padding:4px 8px;border-radius:6px;outline:none;">
+    <span style="color:var(--muted);font-size:.7rem">—</span>
+    <input type="date" id="hToDate" onchange="hQuick('custom',null)" style="background:var(--s3);border:1px solid var(--border2);color:var(--text);font-family:'Inter',sans-serif;font-size:.72rem;padding:4px 8px;border-radius:6px;outline:none;">
    </div>
-   <div class="fg">
-    <label>Temsilci Filtresi</label>
-    <input type="text" id="hRepFilter" placeholder="filtrele..." oninput="renderHaksizList()">
-   </div>
-   <div class="fg">
-    <label>Dispo Filtresi</label>
-    <input type="text" id="hDispoFilter" placeholder="filtrele..." oninput="renderHaksizList()">
+   <!-- Metin filtreleri -->
+   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <div class="fg"><label>Temsilci</label><input type="text" id="hRepFilter" placeholder="filtrele..." oninput="renderHaksizList()"></div>
+    <div class="fg"><label>Dispo</label><input type="text" id="hDispoFilter" placeholder="filtrele..." oninput="renderHaksizList()"></div>
+    <div class="fg"><label>Puan</label>
+     <select id="hScoreFilter" onchange="renderHaksizList()">
+      <option value="">1 ve 2</option>
+      <option value="1">Sadece 1</option>
+      <option value="2">Sadece 2</option>
+     </select>
+    </div>
+    <button class="sbtn" onclick="clearHaksizFilters()">Temizle</button>
+    <span id="hFilterInfo" style="font-size:.68rem;color:var(--muted2);margin-left:auto;align-self:center"></span>
    </div>
   </div>
-  <!-- Toplu ekleme toolbar -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
    <span id="hSelCount" style="font-size:.72rem;color:var(--muted2)">0 seçili</span>
    <div class="fg" style="margin-bottom:0">
@@ -590,6 +601,10 @@ let agentCharts  = {};
 let tlCharts     = {};
 
 
+// ── YEREL TARİH YARDIMCILARI (UTC offset hatası yok) ──
+function localToday(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
+function localDateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
 // ── SKOR RENK & YILDIZ YARDIMCILARI ──
 function scoreColor(s){return s===5?'#22c97a':s>=3?'#f0b429':'#e83b3b';}
 function scoreBg(s){return s===5?'rgba(34,201,122,.15)':s>=3?'rgba(240,180,41,.14)':'rgba(232,59,59,.15)';}
@@ -603,7 +618,7 @@ function saveConfig(c){ localStorage.setItem('sv_cfg',JSON.stringify(c)); }
 function openSetup(){
   document.getElementById('setupOverlay').style.display='flex';
   const cfg = getSavedConfig();
-  const list = cfg?.sheets?.length ? cfg.sheets : [{name:'',url:''}];
+  const list = cfg?.sheets?.length ? cfg.sheets : [{name:'TGO BCC Seller Voice',url:''}];
   renderSheetRows(list);
 }
 
@@ -648,19 +663,25 @@ async function loadAll(){
   btn.disabled=true; btn.textContent='Yükleniyor...';
   try{
     const all=[];
+    let totalArch=0;
     for(const row of rows){
       const projName = row.name || 'Proje '+(rows.indexOf(row)+1);
+      // Sayfa1 — canlı veri
       const recs = await fetchWebApp(row.url, projName);
       all.push(...recs);
+      // Arşiv sayfası — aynı Web App, action=getArchive
+      const archRecs = await fetchArchive(row.url, projName);
+      all.push(...archRecs);
+      totalArch += archRecs.length;
     }
-    allRecords = all;
+    allRecords = dedupeRecords(all);
     saveConfig({sheets:rows});
     buildProjButtons();
     buildTLButtons();
     buildPastMonths();
     document.getElementById('setupOverlay').style.display='none';
     document.getElementById('syncInfo').textContent='Sync: '+new Date().toLocaleTimeString('tr-TR');
-    document.getElementById('footerInfo').textContent=allRecords.length+' kayıt | '+new Date().toLocaleString('tr-TR');
+    document.getElementById('footerInfo').textContent=`${allRecords.length} kayıt (${totalArch} arşiv) | `+new Date().toLocaleString('tr-TR');
     setPeriod('month');
     toast(`${allRecords.length} kayıt yüklendi ✓`,'ok');
   }catch(e){
@@ -675,19 +696,63 @@ async function resyncAll(){
   if(!cfg?.sheets?.length){openSetup();return;}
   try{
     const all=[];
+    let totalArch=0;
     for(const row of cfg.sheets.filter(r=>r.url)){
       const projName=row.name||'Proje';
       all.push(...await fetchWebApp(row.url, projName));
+      const archRecs=await fetchArchive(row.url, projName);
+      all.push(...archRecs);
+      totalArch+=archRecs.length;
     }
-    allRecords=all;
+    allRecords=dedupeRecords(all);
     buildProjButtons();
     buildTLButtons();
     buildPastMonths();
     document.getElementById('syncInfo').textContent='Sync: '+new Date().toLocaleTimeString('tr-TR');
-    document.getElementById('footerInfo').textContent=allRecords.length+' kayıt | '+new Date().toLocaleString('tr-TR');
+    document.getElementById('footerInfo').textContent=`${allRecords.length} kayıt (${totalArch} arşiv) | `+new Date().toLocaleString('tr-TR');
     applyFilters();
     toast(`${allRecords.length} kayıt güncellendi ✓`,'ok');
   }catch(e){ toast('Hata: '+e.message,'err'); console.error(e); }
+}
+
+// Arşiv Web App endpoint — action=getArchive
+// Aynı Apps Script, Arşiv sayfasındaki geçmiş verileri döndürür
+async function fetchArchive(url, projName){
+  if(!url)return[];
+  try{
+    const endpoint=url+(url.includes('?')?'&':'?')+'action=getArchive';
+    const resp=await fetch(endpoint);
+    if(!resp.ok)return[];
+    const json=await resp.json();
+    if(json.error||!Array.isArray(json.records))return[];
+    const recs=json.records.map((r,i)=>({
+      id:'arch_'+i,
+      rep:   r.rep        ||'',
+      date:  r.date       ||'',
+      dispo: r.dispo      ||r.reason||'',
+      score: Number(r.score),
+      callId:r.callId     ||'',
+      proj:  projName     ||r.proj||'Arşiv',
+      note:  r.note       ||'',
+      teamLeader: r.teamLeader||r.tl||'',
+      _archived: true
+    })).filter(r=>r.rep&&r.date&&r.score>=1&&r.score<=5);
+    console.log(`📦 Arşiv (${projName}): ${recs.length} kayıt`);
+    return recs;
+  }catch(e){
+    console.warn('Arşiv yüklenemedi:', e.message);
+    return[];
+  }
+}
+
+// Aynı rep+date+dispo+score kombinasyonundan sadece birini tut
+function dedupeRecords(arr){
+  const seen=new Set();
+  return arr.filter(r=>{
+    const k=`${r.rep}|${r.date}|${r.dispo}|${r.score}`;
+    if(seen.has(k))return false;
+    seen.add(k);return true;
+  });
 }
 
 // ── Web App'ten veri çek ──
@@ -819,16 +884,15 @@ function buildPastMonths(){
 function applyFilters(){
   const now=new Date();
   let from,to;
-  const today=now.toISOString().slice(0,10);
+  const today=localToday();
   if(activePeriod==='today'){
     from=to=today;
   } else if(activePeriod==='week'){
-    // Pazartesi başlangıç — Pazar=0 özel durum
-    const day=now.getDay(); // 0=Pazar,1=Pzt,...,6=Cmt
-    const diffToMon=day===0?-6:1-day; // Pazar ise 6 gün geri, diğerleri Pazartesi'ye
+    const day=now.getDay();
+    const diffToMon=day===0?-6:1-day;
     const mon=new Date(now);
     mon.setDate(now.getDate()+diffToMon);
-    from=mon.toISOString().slice(0,10);
+    from=localDateStr(mon);
     to=today;
   } else if(activePeriod==='month'){
     from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
@@ -848,7 +912,7 @@ function applyFilters(){
   filtered=allRecords.filter(r=>r.date>=from&&r.date<=to
     &&(activeProj==='all'||r.proj===activeProj)
     &&(activeTL==='all'||r.teamLeader===activeTL));
-  document.getElementById('periodCount').textContent=filtered.length+' anket';
+  document.getElementById('periodCount').textContent=`${filtered.length} anket · ${from}${from!==to?' → '+to:''}`;
   renderEverything();
 }
 
@@ -1547,17 +1611,60 @@ function saveHaksiz(){localStorage.setItem('sv_haksiz',JSON.stringify(haksizList
 // Haksız listesi için unique key: rep+date+dispo+score
 function haksizKey(r){return`${r.rep}||${r.date}||${r.dispo}||${r.score}`;}
 
-function getHaksizDetractors(){
-  const periodSel=(document.getElementById('hPeriod')||{}).value||'monthly';
+// Aktif haksız dönem state
+let _hFrom='', _hTo='';
+
+function hQuick(mode, btn){
+  // Buton aktifliğini güncelle
+  document.querySelectorAll('#hqBugün,#hqHafta,#hqAy,#hqTümü').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+
   const now=new Date();
-  let from,to;
-  if(periodSel==='daily'){
-    from=to=now.toISOString().slice(0,10);
-  } else {
-    from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-    to=now.toISOString().slice(0,10);
+  const today=localToday();
+
+  if(mode==='today'){
+    _hFrom=_hTo=today;
+  } else if(mode==='week'){
+    const day=now.getDay();
+    const diffToMon=day===0?-6:1-day;
+    const mon=new Date(now);mon.setDate(now.getDate()+diffToMon);
+    _hFrom=localDateStr(mon); _hTo=today;
+  } else if(mode==='month'){
+    _hFrom=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    _hTo=today;
+  } else if(mode==='all'){
+    _hFrom='2000-01-01'; _hTo='2099-12-31';
+  } else if(mode==='custom'){
+    const f=(document.getElementById('hFromDate')||{}).value||'';
+    const t=(document.getElementById('hToDate')||{}).value||'';
+    _hFrom=f||'2000-01-01'; _hTo=t||'2099-12-31';
   }
-  return filtered.filter(r=>r.score<=2&&r.date>=from&&r.date<=to);
+
+  // Özel aralık input'larını senkronize et
+  if(mode!=='custom'){
+    const fd=document.getElementById('hFromDate');const td=document.getElementById('hToDate');
+    if(fd)fd.value=_hFrom==='2000-01-01'?'':_hFrom;
+    if(td)td.value=_hTo==='2099-12-31'?'':_hTo;
+  }
+  renderHaksizList();
+}
+
+function clearHaksizFilters(){
+  ['hRepFilter','hDispoFilter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const sf=document.getElementById('hScoreFilter');if(sf)sf.value='';
+  hQuick('month', document.getElementById('hqAy'));
+}
+
+function getHaksizDetractors(){
+  const scoreF=(document.getElementById('hScoreFilter')||{}).value||'';
+  // allRecords üzerinde çalış — filtered değil (tüm dönemler gösterilebilsin)
+  const from=_hFrom||localToday();
+  const to=_hTo||localToday();
+  return allRecords.filter(r=>{
+    if(r.score>2)return false;
+    if(scoreF&&r.score!==parseInt(scoreF))return false;
+    return r.date>=from&&r.date<=to;
+  });
 }
 
 function renderHaksizList(){
@@ -1568,6 +1675,8 @@ function renderHaksizList(){
   if(repF)rows=rows.filter(r=>r.rep.toLowerCase().includes(repF));
   if(dispoF)rows=rows.filter(r=>r.dispo.toLowerCase().includes(dispoF));
   rows.sort((a,b)=>b.date.localeCompare(a.date)||a.rep.localeCompare(b.rep,'tr'));
+  const fi=document.getElementById('hFilterInfo');
+  if(fi)fi.textContent=`${rows.length} kayıt listelendi · ${_hFrom||'?'} → ${_hTo||'?'}`;
 
   const tb=document.getElementById('hDetractorTable');
   if(!rows.length){
@@ -1868,8 +1977,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   } else {
     renderSheetRows([{name:'TGO BCC Seller Voice',url:''}]);
   }
-  const td=new Date().toISOString().slice(0,10);
-  document.getElementById('cfrom').value=new Date(new Date().setDate(new Date().getDate()-7)).toISOString().slice(0,10);
+  const td=localToday();
+  const _wa=new Date();_wa.setDate(_wa.getDate()-7);
+  document.getElementById('cfrom').value=localDateStr(_wa);
   document.getElementById('cto').value=td;
 });
 
